@@ -1,0 +1,396 @@
+# AeroFlow Web Architecture
+
+## Назначение документа
+
+Документ определяет границы, структуру и правила развития `aeroflow-web`.
+
+Архитектура frontend подчиняется общей архитектуре AeroFlow. Доменные понятия и
+правила берутся из `aeroflow-docs`, а публичные операции — из контрактов API.
+
+## Архитектурная роль
+
+`aeroflow-web` является presentation-клиентом. Он помогает пользователю выполнить
+use case, но не становится отдельным источником бизнес-решений.
+
+```text
+UI
+  → frontend use case
+  → API client
+  → aeroflow-core
+  → domain model
+```
+
+Frontend может:
+
+* скрывать недоступные действия;
+* проверять формат полей до отправки;
+* запрашивать подтверждение опасного действия;
+* оптимистично обновлять интерфейс там, где это безопасно;
+* преобразовывать API DTO в удобную для отображения форму.
+
+Frontend не должен:
+
+* самостоятельно разрешать недопустимый доменный переход;
+* считать локальное состояние окончательным результатом операции;
+* дублировать агрегаты и доменные сервисы backend;
+* связываться с RabbitMQ, базами данных или audio-agent;
+* выводить доступ к операции только из скрытой или показанной кнопки.
+
+Авторизация всегда проверяется backend.
+
+## Технологический стек
+
+### React и TypeScript
+
+React отвечает за композицию интерфейса. TypeScript обязателен для исходного кода
+приложения и используется в строгом режиме.
+
+API-типы описывают внешний контракт, но не считаются доменными сущностями
+frontend.
+
+### Vite
+
+Vite отвечает за development server, сборку и передачу публичной конфигурации
+окружения.
+
+### Mantine
+
+Mantine является основной UI-библиотекой:
+
+* layout;
+* формы и поля ввода;
+* таблицы и визуальные состояния;
+* modal и notification;
+* theme и responsive UI.
+
+Общие компоненты приложения строятся поверх Mantine только при наличии
+повторяющегося поведения или единого продуктового оформления.
+
+### TanStack Query
+
+TanStack Query является источником состояния для данных, полученных с сервера:
+
+* списки и детали ресурсов;
+* loading и error state;
+* кэширование;
+* mutations;
+* invalidation и refetch;
+* согласование параллельных запросов.
+
+Серверные DTO не копируются в Zustand.
+
+Query keys должны быть централизованы в пределах feature:
+
+```ts
+const flightDefinitionKeys = {
+  all: ['flight-definitions'] as const,
+  lists: () => [...flightDefinitionKeys.all, 'list'] as const,
+  list: (filters: FlightDefinitionFilters) =>
+    [...flightDefinitionKeys.lists(), filters] as const,
+  details: () => [...flightDefinitionKeys.all, 'detail'] as const,
+  detail: (id: string) => [...flightDefinitionKeys.details(), id] as const,
+}
+```
+
+После mutation обновляется конкретный кэш или инвалидируются только связанные
+query keys.
+
+### Zustand
+
+Zustand используется для небольшого клиентского состояния, которое не принадлежит
+серверному API:
+
+* данные текущей клиентской сессии, если они действительно нужны глобально;
+* состояние sidebar;
+* выбранная тема;
+* локальные предпочтения пользователя;
+* краткоживущее состояние многошагового UI.
+
+Zustand не используется как универсальный store и не заменяет TanStack Query,
+React state или URL.
+
+Если состояние нужно только одному компоненту, используется локальный React
+state. Если состояние должно переживать перезагрузку и быть доступно по ссылке,
+предпочтителен URL.
+
+### React Router
+
+Router отвечает за:
+
+* дерево экранов;
+* layout routes;
+* protected routes;
+* параметры ресурса;
+* query parameters фильтрации и пагинации;
+* страницы `not found` и `access denied`.
+
+Фильтры таблиц, поиск, сортировка и номер страницы по возможности хранятся в URL.
+
+## Структура приложения
+
+Рекомендуемая структура ориентирована на продуктовые features:
+
+```text
+src/
+  app/
+    App.tsx
+    providers/
+    router/
+    theme/
+  pages/
+    login/
+    flight-definitions/
+    not-found/
+  features/
+    auth/
+    flight-definitions/
+  shared/
+    api/
+    config/
+    lib/
+    ui/
+    types/
+  main.tsx
+```
+
+### `app`
+
+Композиционный корень приложения:
+
+* подключение providers;
+* router;
+* QueryClient;
+* Mantine theme;
+* глобальная обработка ошибок.
+
+`app` не содержит бизнес-specific API calls.
+
+### `pages`
+
+Компонуют законченные экраны из features и shared-компонентов. Страница отвечает
+за layout и сценарий экрана, но не содержит низкоуровневый HTTP-код.
+
+### `features`
+
+Каждая feature соответствует пользовательской возможности или устойчивой части
+предметного интерфейса.
+
+Пример:
+
+```text
+features/flight-definitions/
+  api/
+    flightDefinitionApi.ts
+    flightDefinitionKeys.ts
+  model/
+    types.ts
+    validation.ts
+  ui/
+    FlightDefinitionForm.tsx
+    FlightDefinitionTable.tsx
+  hooks/
+    useFlightDefinitions.ts
+    useCreateFlightDefinition.ts
+```
+
+Feature не импортирует код из другой feature напрямую без явной причины.
+Повторно используемый нейтральный код переносится в `shared`.
+
+### `shared`
+
+Содержит технические и UI-примитивы без бизнес-сценария:
+
+* HTTP client;
+* базовые типы API;
+* конфигурацию;
+* generic hooks;
+* форматирование;
+* общие компоненты.
+
+`shared` не импортирует `features` или `pages`.
+
+## Направление зависимостей
+
+```text
+app/pages
+    ↓
+features
+    ↓
+shared
+```
+
+Импорты в обратную сторону запрещены. Циклические зависимости между features
+также запрещены.
+
+## API layer
+
+Все HTTP-запросы проходят через единый API client.
+
+Он отвечает за:
+
+* базовый URL;
+* JSON headers;
+* передачу access token;
+* единый разбор успешного ответа;
+* преобразование API error в типизированную ошибку;
+* одну контролируемую попытку обновления токена;
+* отмену исходящих запросов, где это необходимо.
+
+Feature API-функции описывают конкретные endpoints:
+
+```ts
+getFlightDefinitions(filters)
+getFlightDefinition(id)
+createFlightDefinition(input)
+updateFlightDefinition(id, input)
+activateFlightDefinition(id)
+deactivateFlightDefinition(id)
+```
+
+React-компоненты не вызывают `fetch` напрямую.
+
+## Аутентификация и токены
+
+`aeroflow-core` является источником истины для пользователя, ролей и срока жизни
+сессии.
+
+Базовый поток:
+
+1. пользователь отправляет email и пароль;
+2. frontend получает token pair;
+3. access token прикладывается к API-запросам;
+4. при истечении access token выполняется одна попытка refresh;
+5. при неуспешном refresh локальная сессия очищается;
+6. пользователь возвращается на страницу входа.
+
+Точный способ хранения refresh token должен быть согласован с backend-контрактом.
+Предпочтительный production-вариант — защищённая `HttpOnly Secure SameSite`
+cookie. Если текущий API возвращает refresh token в JSON, временное решение и его
+риски фиксируются отдельным task.
+
+Нельзя:
+
+* логировать токены;
+* помещать токены в URL;
+* считать декодированный JWT достаточным доказательством доступа;
+* запускать несколько параллельных refresh-запросов.
+
+## Ошибки
+
+Frontend различает:
+
+* validation errors — показываются рядом с полями;
+* authentication errors — завершают или восстанавливают сессию;
+* forbidden — показывают отсутствие доступа;
+* not found — показывают состояние отсутствующего ресурса;
+* conflict — объясняют конфликт бизнес-ключа или состояния;
+* network/server errors — показывают возможность повторить запрос.
+
+Компоненты не зависят от сырого формата ошибки транспорта. API client приводит
+ошибку к единой модели:
+
+```ts
+type ApiError = {
+  status: number
+  code?: string
+  message: string
+  violations?: Record<string, string[]>
+}
+```
+
+Точный тип синхронизируется с фактическим контрактом `aeroflow-core`.
+
+## Формы и валидация
+
+Клиентская валидация повторяет только стабильные ограничения, полезные для UX:
+
+* обязательность поля;
+* формат номера рейса;
+* формат IATA-кода;
+* различие аэропортов отправления и назначения.
+
+Окончательное решение всегда принимает backend. Серверные violations должны
+привязываться к соответствующим полям формы.
+
+## Realtime
+
+CRUD первого этапа работает через HTTP.
+
+Для будущей очереди воспроизведения realtime-транспорт выбирается отдельным
+решением. Возможные варианты — WebSocket или Server-Sent Events. До фиксации
+контракта нельзя строить UI на прямом соединении с `aeroflow-agent`.
+
+При потере realtime-соединения интерфейс должен явно показывать, что данные могут
+быть неактуальны.
+
+## Тестирование
+
+Рекомендуемые уровни:
+
+1. unit tests для преобразований, validation и небольших stores;
+2. component tests для форм и состояний интерфейса;
+3. integration tests features с mock HTTP server;
+4. небольшое число end-to-end тестов критических сценариев.
+
+Рекомендуемые инструменты:
+
+* Vitest;
+* React Testing Library;
+* Mock Service Worker;
+* Playwright для end-to-end.
+
+Тесты должны проверять поведение пользователя и публичные контракты, а не
+внутреннюю структуру React-компонентов.
+
+## Качество
+
+Минимальные проверки проекта:
+
+```text
+lint
+typecheck
+test
+build
+```
+
+В production-коде не допускаются:
+
+* необоснованный `any`;
+* прямые HTTP-вызовы из UI-компонентов;
+* хранение серверных коллекций в Zustand;
+* бизнес-правила, расходящиеся с `aeroflow-core`;
+* секреты в frontend-конфигурации;
+* игнорирование ошибок Promise.
+
+## Первый bounded context
+
+Первый frontend-срез относится к `Flight Operations` и отображает агрегат
+`FlightDefinition`.
+
+Изменение является presentation/integration-изменением. Оно:
+
+* не добавляет агрегаты;
+* не публикует domain events;
+* вызывает существующие application use cases через HTTP API;
+* после mutations актуализирует TanStack Query cache.
+
+Доменные события `FlightDefinitionCreated`, `FlightDefinitionUpdated`,
+`FlightDefinitionActivated` и `FlightDefinitionDeactivated` публикуются внутри
+`aeroflow-core`, а не frontend.
+
+## Будущее развитие
+
+Новые экраны добавляются вертикальными срезами:
+
+```text
+API contract
+  → feature API
+  → query/mutation
+  → UI scenario
+  → tests
+```
+
+Frontend не должен заранее вводить модели `FlightSchedule`, `FlightOccurrence`,
+`Announcement`, `AudioAsset` или `PlaybackJob`, пока соответствующий use case и
+API-контракт не зафиксированы в документации.
+
