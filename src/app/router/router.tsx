@@ -5,6 +5,7 @@ import { AppLayout } from '@/app/router/ui/AppLayout'
 import { ProtectedRoute } from '@/app/router/ui/ProtectedRoute'
 import { PublicOnlyRoute } from '@/app/router/ui/PublicOnlyRoute'
 import { FlightDefinitionsPage } from '@/pages/flight-definitions/FlightDefinitionsPage'
+import { AirportsPage } from '@/pages/airports/AirportsPage'
 import { LoginPage } from '@/pages/login/LoginPage'
 import { NotFoundPage } from '@/pages/not-found/NotFoundPage'
 
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
       {
         path: paths.flightDefinitions,
         element: <FlightDefinitionsPage />,
+      },
+      {
+        path: paths.airports,
+        element: <AirportsPage />,
       },
     ],
   },

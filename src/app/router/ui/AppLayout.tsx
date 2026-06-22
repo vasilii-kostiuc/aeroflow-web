@@ -1,6 +1,6 @@
 import { AppShell, Burger, Group, NavLink, Text, Title } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { IconPlaneDeparture } from '@tabler/icons-react'
+import { IconBuildingAirport, IconPlaneDeparture } from '@tabler/icons-react'
 import { NavLink as RouterNavLink, Outlet } from 'react-router'
 
 import { paths } from '@/app/router/paths'
@@ -46,6 +46,13 @@ export function AppLayout() {
           to={paths.flightDefinitions}
           label="Карточки рейсов"
           leftSection={<IconPlaneDeparture size={18} />}
+          onClick={close}
+        />
+        <NavLink
+          component={RouterNavLink}
+          to={paths.airports}
+          label="Аэропорты"
+          leftSection={<IconBuildingAirport size={18} />}
           onClick={close}
         />
       </AppShell.Navbar>

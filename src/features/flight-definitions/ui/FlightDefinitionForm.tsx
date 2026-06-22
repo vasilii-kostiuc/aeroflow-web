@@ -14,6 +14,7 @@ import { useForm } from '@mantine/form'
 import { IconAlertCircle } from '@tabler/icons-react'
 
 import { ApiClientError } from '@/shared/api/apiClient'
+import { useAirports } from '@/features/airports/hooks/useAirports'
 
 import {
   useCreateFlightDefinition,
@@ -48,6 +49,7 @@ export function FlightDefinitionForm({
 }: Props) {
   const createMutation = useCreateFlightDefinition()
   const updateMutation = useUpdateFlightDefinition()
+  const airports = useAirports({ page: 1, limit: 100 })
   const [formError, setFormError] = useState<string | null>(null)
   const form = useForm<FlightDefinitionInput>({
     initialValues: flightDefinition
@@ -61,6 +63,17 @@ export function FlightDefinitionForm({
     validate: validateFlightDefinitionInput,
   })
   const mutation = flightDefinition ? updateMutation : createMutation
+  const airportOptions = (airports.data?.items ?? [])
+    .filter(
+      (airport) =>
+        airport.active ||
+        airport.code === flightDefinition?.originAirportCode ||
+        airport.code === flightDefinition?.destinationAirportCode,
+    )
+    .map((airport) => ({
+      value: airport.code,
+      label: `${airport.cityName} (${airport.code})`,
+    }))
 
   async function handleSubmit(values: FlightDefinitionInput) {
     setFormError(null)
@@ -130,17 +143,19 @@ export function FlightDefinitionForm({
           />
 
           <SimpleGrid cols={{ base: 1, sm: 2 }}>
-            <TextInput
+            <Select
               label="Аэропорт отправления"
-              placeholder="KIV"
-              maxLength={3}
+              placeholder="Выберите аэропорт"
+              searchable
+              data={airportOptions}
               required
               {...form.getInputProps('originAirportCode')}
             />
-            <TextInput
+            <Select
               label="Аэропорт назначения"
-              placeholder="FCO"
-              maxLength={3}
+              placeholder="Выберите аэропорт"
+              searchable
+              data={airportOptions}
               required
               {...form.getInputProps('destinationAirportCode')}
             />

@@ -15,6 +15,7 @@ import {
 } from '@tabler/icons-react'
 
 import type { FlightDefinition } from '../model/types'
+import { useAirports } from '@/features/airports/hooks/useAirports'
 
 type Props = {
   items: FlightDefinition[]
@@ -36,6 +37,16 @@ export function FlightDefinitionTable({
   onActivate,
   onDeactivate,
 }: Props) {
+  const airports = useAirports({ page: 1, limit: 100 })
+  const cityByCode = new Map(
+    (airports.data?.items ?? []).map((airport) => [airport.code, airport.cityName]),
+  )
+
+  function airportLabel(code: string) {
+    const city = cityByCode.get(code)
+    return city ? `${city} (${code})` : code
+  }
+
   return (
     <Table.ScrollContainer minWidth={720}>
       <Table verticalSpacing="sm" highlightOnHover>
@@ -59,9 +70,9 @@ export function FlightDefinitionTable({
               <Table.Td>{directionLabels[item.direction]}</Table.Td>
               <Table.Td>
                 <Group gap="xs" wrap="nowrap">
-                  <Text>{item.originAirportCode}</Text>
+                  <Text>{airportLabel(item.originAirportCode)}</Text>
                   <Text c="dimmed">→</Text>
-                  <Text>{item.destinationAirportCode}</Text>
+                  <Text>{airportLabel(item.destinationAirportCode)}</Text>
                 </Group>
               </Table.Td>
               <Table.Td>
@@ -117,4 +128,3 @@ export function FlightDefinitionTable({
     </Table.ScrollContainer>
   )
 }
-

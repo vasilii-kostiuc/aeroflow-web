@@ -1,10 +1,10 @@
 import { apiRequest } from '@/shared/api/apiClient'
+import type { PaginatedResult } from '@/shared/api/types'
 
 import type {
   FlightDefinition,
   FlightDefinitionFilters,
   FlightDefinitionInput,
-  PaginatedResult,
 } from '../model/types'
 
 const basePath = '/v1/flight-definitions'
