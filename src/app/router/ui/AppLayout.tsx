@@ -4,6 +4,7 @@ import { IconPlaneDeparture } from '@tabler/icons-react'
 import { NavLink as RouterNavLink, Outlet } from 'react-router'
 
 import { paths } from '@/app/router/paths'
+import { CurrentUserMenu } from '@/features/auth/ui/CurrentUserMenu'
 
 export function AppLayout() {
   const [opened, { toggle, close }] = useDisclosure()
@@ -19,20 +20,23 @@ export function AppLayout() {
       padding="lg"
     >
       <AppShell.Header px="lg">
-        <Group h="100%">
-          <Burger
-            opened={opened}
-            onClick={toggle}
-            hiddenFrom="sm"
-            size="sm"
-            aria-label="Открыть навигацию"
-          />
-          <div>
-            <Title order={3}>AeroFlow</Title>
-            <Text size="xs" c="dimmed">
-              Airport announcements
-            </Text>
-          </div>
+        <Group h="100%" justify="space-between" wrap="nowrap">
+          <Group wrap="nowrap">
+            <Burger
+              opened={opened}
+              onClick={toggle}
+              hiddenFrom="sm"
+              size="sm"
+              aria-label="Открыть навигацию"
+            />
+            <div>
+              <Title order={3}>AeroFlow</Title>
+              <Text size="xs" c="dimmed">
+                Airport announcements
+              </Text>
+            </div>
+          </Group>
+          <CurrentUserMenu />
         </Group>
       </AppShell.Header>
 

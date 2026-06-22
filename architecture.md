@@ -364,19 +364,24 @@ build
 
 ## Первый bounded context
 
-Первый frontend-срез относится к `Flight Operations` и отображает агрегат
-`FlightDefinition`.
+Первый frontend-срез относится к `User Access` и реализует вход, клиентскую
+сессию, обновление токенов, защищённые маршруты и выход.
 
 Изменение является presentation/integration-изменением. Оно:
 
 * не добавляет агрегаты;
 * не публикует domain events;
-* вызывает существующие application use cases через HTTP API;
-* после mutations актуализирует TanStack Query cache.
+* вызывает существующие login, refresh и logout use cases через HTTP API;
+* использует Zustand только для состояния клиентской сессии;
+* очищает TanStack Query cache при завершении сессии.
 
-Доменные события `FlightDefinitionCreated`, `FlightDefinitionUpdated`,
-`FlightDefinitionActivated` и `FlightDefinitionDeactivated` публикуются внутри
-`aeroflow-core`, а не frontend.
+Текущий API возвращает refresh token в JSON. До перехода core на
+`HttpOnly Secure SameSite` cookie web временно хранит token pair в
+`localStorage`. Это осознанный компромисс первого среза, а не целевая
+production-модель безопасности.
+
+Следующий frontend-срез относится к `Flight Operations` и отображает агрегат
+`FlightDefinition`.
 
 ## Будущее развитие
 
@@ -393,4 +398,3 @@ API contract
 Frontend не должен заранее вводить модели `FlightSchedule`, `FlightOccurrence`,
 `Announcement`, `AudioAsset` или `PlaybackJob`, пока соответствующий use case и
 API-контракт не зафиксированы в документации.
-

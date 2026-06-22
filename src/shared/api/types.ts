@@ -8,7 +8,7 @@ export type ApiError = {
 export type ApiResponse<TData> = {
   success: boolean
   data: TData
-  message: string
+  message: string | null
   errors: Array<{
     message: string
     field?: string | null

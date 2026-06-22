@@ -1,12 +1,11 @@
 import {
-  Button,
   Paper,
-  PasswordInput,
   Stack,
   Text,
-  TextInput,
   Title,
 } from '@mantine/core'
+
+import { LoginForm } from '@/features/auth/ui/LoginForm'
 
 export function LoginPage() {
   return (
@@ -16,17 +15,11 @@ export function LoginPage() {
           <div>
             <Title order={2}>Вход в AeroFlow</Title>
             <Text c="dimmed" size="sm" mt={4}>
-              Авторизация будет подключена следующим вертикальным срезом.
+              Введите данные своей учётной записи.
             </Text>
           </div>
 
-          <TextInput
-            label="Email"
-            placeholder="dispatcher@example.com"
-            disabled
-          />
-          <PasswordInput label="Пароль" placeholder="Ваш пароль" disabled />
-          <Button disabled>Войти</Button>
+          <LoginForm />
         </Stack>
       </Paper>
     </Stack>
