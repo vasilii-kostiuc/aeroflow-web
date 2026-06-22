@@ -27,13 +27,3 @@ export type FlightDefinitionFilters = {
   limit: number
 }
 
-export type PaginatedResult<TItem> = {
-  items: TItem[]
-  pagination: {
-    page: number
-    limit: number
-    totalItems: number
-    totalPages: number
-  }
-}
-

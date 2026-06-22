@@ -15,3 +15,13 @@ export type ApiResponse<TData> = {
     code?: string | null
   }>
 }
+
+export type PaginatedResult<TItem> = {
+  items: TItem[]
+  pagination: {
+    page: number
+    limit: number
+    totalItems: number
+    totalPages: number
+  }
+}
