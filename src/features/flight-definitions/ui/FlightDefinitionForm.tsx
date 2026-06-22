@@ -15,6 +15,7 @@ import { IconAlertCircle } from '@tabler/icons-react'
 
 import { ApiClientError } from '@/shared/api/apiClient'
 import { useAirports } from '@/features/airports/hooks/useAirports'
+import { formatAirportLabel } from '@/features/airports/model/formatAirportLabel'
 
 import {
   useCreateFlightDefinition,
@@ -72,7 +73,7 @@ export function FlightDefinitionForm({
     )
     .map((airport) => ({
       value: airport.code,
-      label: `${airport.cityName} (${airport.code})`,
+      label: formatAirportLabel(airport),
     }))
 
   async function handleSubmit(values: FlightDefinitionInput) {
