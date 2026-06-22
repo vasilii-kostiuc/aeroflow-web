@@ -16,6 +16,7 @@ import {
 
 import type { FlightDefinition } from '../model/types'
 import { useAirports } from '@/features/airports/hooks/useAirports'
+import { formatAirportLabel } from '@/features/airports/model/formatAirportLabel'
 
 type Props = {
   items: FlightDefinition[]
@@ -38,13 +39,13 @@ export function FlightDefinitionTable({
   onDeactivate,
 }: Props) {
   const airports = useAirports({ page: 1, limit: 100 })
-  const cityByCode = new Map(
-    (airports.data?.items ?? []).map((airport) => [airport.code, airport.cityName]),
+  const airportByCode = new Map(
+    (airports.data?.items ?? []).map((airport) => [airport.code, airport]),
   )
 
   function airportLabel(code: string) {
-    const city = cityByCode.get(code)
-    return city ? `${city} (${code})` : code
+    const airport = airportByCode.get(code)
+    return airport ? formatAirportLabel(airport) : code
   }
 
   return (
