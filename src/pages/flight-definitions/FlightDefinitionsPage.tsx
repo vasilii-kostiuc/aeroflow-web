@@ -39,6 +39,7 @@ export function FlightDefinitionsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [formOpened, setFormOpened] = useState(false)
   const [editing, setEditing] = useState<FlightDefinition | null>(null)
+  const [formTab, setFormTab] = useState<'details' | 'announcements'>('details')
   const [pendingId, setPendingId] = useState<string | null>(null)
   const filters = parseFlightDefinitionFilters(searchParams)
   const definitions = useFlightDefinitions(filters)
@@ -52,11 +53,19 @@ export function FlightDefinitionsPage() {
 
   function openCreate() {
     setEditing(null)
+    setFormTab('details')
     setFormOpened(true)
   }
 
   function openEdit(item: FlightDefinition) {
     setEditing(item)
+    setFormTab('details')
+    setFormOpened(true)
+  }
+
+  function openAnnouncements(item: FlightDefinition) {
+    setEditing(item)
+    setFormTab('announcements')
     setFormOpened(true)
   }
 
@@ -166,6 +175,7 @@ export function FlightDefinitionsPage() {
                 items={definitions.data.items}
                 pendingId={pendingId}
                 onEdit={openEdit}
+                onConfigureAnnouncements={openAnnouncements}
                 onActivate={(item) => void changeActive(item, true)}
                 onDeactivate={confirmDeactivate}
               />
@@ -190,6 +200,7 @@ export function FlightDefinitionsPage() {
         <FlightDefinitionForm
           opened
           flightDefinition={editing}
+          initialTab={formTab}
           onClose={() => setFormOpened(false)}
         />
       )}

@@ -8,9 +8,10 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  Tabs,
   TextInput,
 } from '@mantine/core'
-import { useForm } from '@mantine/form'
+import { useForm, type UseFormReturnType } from '@mantine/form'
 import { IconAlertCircle } from '@tabler/icons-react'
 
 import { ApiClientError } from '@/shared/api/apiClient'
@@ -29,10 +30,12 @@ import {
   normalizeFlightDefinitionInput,
   validateFlightDefinitionInput,
 } from '../model/validation'
+import { FlightAnnouncementConfigsPanel } from './announcement-configs/FlightAnnouncementConfigsPanel'
 
 type Props = {
   opened: boolean
   flightDefinition: FlightDefinition | null
+  initialTab?: 'details' | 'announcements'
   onClose: () => void
 }
 
@@ -46,6 +49,7 @@ const emptyValues: FlightDefinitionInput = {
 export function FlightDefinitionForm({
   opened,
   flightDefinition,
+  initialTab = 'details',
   onClose,
 }: Props) {
   const createMutation = useCreateFlightDefinition()
@@ -113,11 +117,73 @@ export function FlightDefinitionForm({
       onClose={onClose}
       title={flightDefinition ? 'Редактировать карточку' : 'Новая карточка рейса'}
       centered
+      size={flightDefinition ? 'xl' : 'md'}
       closeOnClickOutside={!mutation.isPending}
       closeOnEscape={!mutation.isPending}
     >
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack>
+      {flightDefinition ? (
+        <Tabs defaultValue={initialTab}>
+          <Tabs.List mb="md">
+            <Tabs.Tab value="details">Карточка</Tabs.Tab>
+            <Tabs.Tab value="announcements">Объявления</Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="details">
+            <FlightDefinitionFields
+              form={form}
+              formError={formError}
+              airportOptions={airportOptions}
+              mutationPending={mutation.isPending}
+              submitLabel="Сохранить"
+              onClose={onClose}
+              onSubmit={handleSubmit}
+            />
+          </Tabs.Panel>
+          <Tabs.Panel value="announcements">
+            <FlightAnnouncementConfigsPanel flightDefinition={flightDefinition} />
+          </Tabs.Panel>
+        </Tabs>
+      ) : (
+        <FlightDefinitionFields
+          form={form}
+          formError={formError}
+          airportOptions={airportOptions}
+          mutationPending={mutation.isPending}
+          submitLabel="Создать"
+          onClose={onClose}
+          onSubmit={handleSubmit}
+        />
+      )}
+    </Modal>
+  )
+}
+
+type FormShape = UseFormReturnType<
+  FlightDefinitionInput,
+  FlightDefinitionInput,
+  typeof validateFlightDefinitionInput
+>
+
+function FlightDefinitionFields({
+  form,
+  formError,
+  airportOptions,
+  mutationPending,
+  submitLabel,
+  onClose,
+  onSubmit,
+}: {
+  form: FormShape
+  formError: string | null
+  airportOptions: Array<{ value: string; label: string }>
+  mutationPending: boolean
+  submitLabel: string
+  onClose: () => void
+  onSubmit: (values: FlightDefinitionInput) => Promise<void>
+}) {
+  return (
+    <form onSubmit={form.onSubmit(onSubmit)}>
+      <Stack>
           {formError && (
             <Alert color="red" icon={<IconAlertCircle size={18} />}>
               {formError}
@@ -166,16 +232,15 @@ export function FlightDefinitionForm({
             <Button
               variant="default"
               onClick={onClose}
-              disabled={mutation.isPending}
+              disabled={mutationPending}
             >
               Отмена
             </Button>
-            <Button type="submit" loading={mutation.isPending}>
-              {flightDefinition ? 'Сохранить' : 'Создать'}
+            <Button type="submit" loading={mutationPending}>
+              {submitLabel}
             </Button>
           </Group>
-        </Stack>
-      </form>
-    </Modal>
+      </Stack>
+    </form>
   )
 }

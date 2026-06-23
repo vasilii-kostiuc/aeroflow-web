@@ -7,5 +7,7 @@ export const flightDefinitionKeys = {
     [...flightDefinitionKeys.lists(), filters] as const,
   details: () => [...flightDefinitionKeys.all, 'detail'] as const,
   detail: (id: string) => [...flightDefinitionKeys.details(), id] as const,
+  announcementConfigs: (id: string) =>
+    [...flightDefinitionKeys.detail(id), 'announcement-configs'] as const,
+  audioAssets: ['audio-assets'] as const,
 }
-

@@ -10,6 +10,7 @@ import {
 import {
   IconDotsVertical,
   IconEdit,
+  IconSpeakerphone,
   IconPlayerPause,
   IconPlayerPlay,
 } from '@tabler/icons-react'
@@ -22,6 +23,7 @@ type Props = {
   items: FlightDefinition[]
   pendingId: string | null
   onEdit: (flightDefinition: FlightDefinition) => void
+  onConfigureAnnouncements: (flightDefinition: FlightDefinition) => void
   onActivate: (flightDefinition: FlightDefinition) => void
   onDeactivate: (flightDefinition: FlightDefinition) => void
 }
@@ -35,6 +37,7 @@ export function FlightDefinitionTable({
   items,
   pendingId,
   onEdit,
+  onConfigureAnnouncements,
   onActivate,
   onDeactivate,
 }: Props) {
@@ -101,6 +104,12 @@ export function FlightDefinitionTable({
                       onClick={() => onEdit(item)}
                     >
                       Редактировать
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<IconSpeakerphone size={16} />}
+                      onClick={() => onConfigureAnnouncements(item)}
+                    >
+                      Настроить объявления
                     </Menu.Item>
                     {item.active ? (
                       <Menu.Item
