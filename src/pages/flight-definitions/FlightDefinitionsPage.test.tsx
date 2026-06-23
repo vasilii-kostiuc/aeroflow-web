@@ -107,6 +107,59 @@ describe('FlightDefinitionsPage', () => {
     expect(screen.getByText('Активна')).toBeInTheDocument()
   })
 
+  it('opens announcement settings directly from the flight actions menu', async () => {
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+
+      if (url.includes('/announcement-configs')) return Promise.resolve(apiResponse([]))
+      if (url.includes('/audio-assets')) return Promise.resolve(apiResponse([]))
+      if (url.includes('/airports')) {
+        return Promise.resolve(
+          apiResponse({
+            items: [],
+            pagination: {
+              page: 1,
+              limit: 100,
+              totalItems: 0,
+              totalPages: 0,
+            },
+          }),
+        )
+      }
+
+      return Promise.resolve(
+        listResponse([
+          {
+            id: '01900000-0000-7000-8000-000000000001',
+            flightNumber: '5F123',
+            direction: 'departure',
+            originAirportCode: 'KIV',
+            destinationAirportCode: 'FCO',
+            active: true,
+            createdAt: '2026-06-22T10:00:00+00:00',
+            updatedAt: '2026-06-22T10:00:00+00:00',
+          },
+        ]),
+      )
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const user = userEvent.setup()
+
+    renderPage()
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Действия для рейса 5F123' }),
+    )
+    await user.click(
+      await screen.findByRole('menuitem', { name: 'Настроить объявления' }),
+    )
+
+    expect(await screen.findByText('Объявления рейса')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Начало регистрации' }),
+    ).toBeInTheDocument()
+  })
+
   it('shows a retry action when the list request fails', async () => {
     const fetchMock = vi
       .fn()
