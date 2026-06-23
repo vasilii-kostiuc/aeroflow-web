@@ -61,6 +61,23 @@ describe('apiClient authentication', () => {
     )
   })
 
+  it('sends FormData without overriding the multipart content type', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ok: true }))
+    vi.stubGlobal('fetch', fetchMock)
+    const body = new FormData()
+    body.set('languageCode', 'ro-MD')
+    body.set('file', new File(['audio'], 'begin.wav', { type: 'audio/wav' }))
+
+    await apiRequest('/v1/admin/audio-assets', {
+      method: 'POST',
+      body,
+    })
+
+    const request = fetchMock.mock.calls[0]?.[1] as RequestInit
+    expect(request.body).toBe(body)
+    expect(new Headers(request.headers).has('Content-Type')).toBe(false)
+  })
+
   it('uses one refresh request for parallel 401 responses and retries both', async () => {
     const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
       const token = new Headers(init?.headers).get('Authorization')

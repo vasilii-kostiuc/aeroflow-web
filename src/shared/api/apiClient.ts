@@ -104,7 +104,9 @@ export async function apiRequest<TData>(
 
   requestHeaders.set('Accept', 'application/json')
 
-  if (body !== undefined) {
+  const isFormData = body instanceof FormData
+
+  if (body !== undefined && !isFormData) {
     requestHeaders.set('Content-Type', 'application/json')
   }
 
@@ -122,7 +124,12 @@ export async function apiRequest<TData>(
     response = await fetch(buildUrl(path), {
       ...requestInit,
       headers: requestHeaders,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body:
+        body === undefined
+          ? undefined
+          : isFormData
+            ? body
+            : JSON.stringify(body),
     })
   } catch {
     throw new ApiClientError({
