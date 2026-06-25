@@ -9,6 +9,7 @@ import {
   deactivateFlightDefinition,
   getFlightAnnouncementConfigs,
   getAudioAssets,
+  getFlightDefinition,
   updateAnnouncementVariant,
   updateFlightAnnouncementConfig,
   uploadAudioAsset,
@@ -31,11 +32,32 @@ export function useFlightDefinitions(filters: FlightDefinitionFilters) {
   })
 }
 
+export function useFlightDefinition(id?: string) {
+  return useQuery({
+    queryKey: flightDefinitionKeys.detail(id ?? ''),
+    queryFn: () => getFlightDefinition(id ?? ''),
+    enabled: Boolean(id),
+  })
+}
+
 function useInvalidateFlightDefinitions() {
   const queryClient = useQueryClient()
 
   return () =>
     queryClient.invalidateQueries({ queryKey: flightDefinitionKeys.all })
+}
+
+function useInvalidateFlightDefinition(id?: string) {
+  const queryClient = useQueryClient()
+
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: flightDefinitionKeys.all })
+    if (id) {
+      void queryClient.invalidateQueries({
+        queryKey: flightDefinitionKeys.detail(id),
+      })
+    }
+  }
 }
 
 export function useCreateFlightDefinition() {
@@ -47,7 +69,7 @@ export function useCreateFlightDefinition() {
 }
 
 export function useUpdateFlightDefinition() {
-  const invalidate = useInvalidateFlightDefinitions()
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({
       id,
@@ -56,20 +78,25 @@ export function useUpdateFlightDefinition() {
       id: string
       input: FlightDefinitionInput
     }) => updateFlightDefinition(id, input),
-    onSuccess: invalidate,
+    onSuccess: (flightDefinition) => {
+      void queryClient.invalidateQueries({ queryKey: flightDefinitionKeys.all })
+      void queryClient.invalidateQueries({
+        queryKey: flightDefinitionKeys.detail(flightDefinition.id),
+      })
+    },
   })
 }
 
-export function useActivateFlightDefinition() {
-  const invalidate = useInvalidateFlightDefinitions()
+export function useActivateFlightDefinition(id?: string) {
+  const invalidate = useInvalidateFlightDefinition(id)
   return useMutation({
     mutationFn: activateFlightDefinition,
     onSuccess: invalidate,
   })
 }
 
-export function useDeactivateFlightDefinition() {
-  const invalidate = useInvalidateFlightDefinitions()
+export function useDeactivateFlightDefinition(id?: string) {
+  const invalidate = useInvalidateFlightDefinition(id)
   return useMutation({
     mutationFn: deactivateFlightDefinition,
     onSuccess: invalidate,

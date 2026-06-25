@@ -34,15 +34,34 @@ export type FlightAnnouncementType =
   | 'boarding_invitation'
   | 'arrival'
 
-export type AnnouncementVariantSourceType = 'audio_asset' | 'text'
+export type AnnouncementTemplateSegmentType =
+  | 'audio_asset'
+  | 'dynamic_slot'
+  | 'pause'
+  | 'text'
+
+export type DynamicSlotType = 'check_in_counters' | 'gate_code'
+
+export type AnnouncementTemplateSegment = {
+  id: string
+  sortOrder: number
+  type: AnnouncementTemplateSegmentType
+  audioAssetId: string | null
+  slot: DynamicSlotType | null
+  durationMs: number | null
+  text: string | null
+}
+
+export type AnnouncementTemplateSegmentInput = Omit<
+  AnnouncementTemplateSegment,
+  'id'
+>
 
 export type AnnouncementVariant = {
   id: string
   languageCode: string
   sortOrder: number
-  sourceType: AnnouncementVariantSourceType
-  audioAssetId: string | null
-  text: string | null
+  segments: AnnouncementTemplateSegment[]
   enabled: boolean
   createdAt: string
   updatedAt: string
@@ -84,8 +103,6 @@ export type FlightAnnouncementConfigSettingsInput = {
 export type AnnouncementVariantInput = {
   languageCode: string
   sortOrder: number
-  sourceType: AnnouncementVariantSourceType
-  audioAssetId?: string | null
-  text?: string | null
+  segments: AnnouncementTemplateSegmentInput[]
   enabled: boolean
 }

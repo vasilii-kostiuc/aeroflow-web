@@ -37,6 +37,10 @@ export function getFlightDefinitions(
   return apiRequest(`${basePath}?${buildFlightDefinitionQuery(filters)}`)
 }
 
+export function getFlightDefinition(id: string): Promise<FlightDefinition> {
+  return apiRequest(`${basePath}/${id}`)
+}
+
 export function createFlightDefinition(
   input: FlightDefinitionInput,
 ): Promise<FlightDefinition> {

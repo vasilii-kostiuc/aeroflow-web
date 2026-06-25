@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 
-import { afterEach } from 'vitest'
+import { afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 
 Object.defineProperty(window, 'matchMedia', {
@@ -32,6 +32,8 @@ Object.defineProperty(globalThis, 'ResizeObserver', {
   writable: true,
   value: ResizeObserverMock,
 })
+
+Element.prototype.scrollIntoView = vi.fn()
 
 afterEach(() => {
   cleanup()

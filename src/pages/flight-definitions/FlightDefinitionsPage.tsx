@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import {
   Alert,
   Button,
@@ -15,8 +13,9 @@ import {
 import { modals } from '@mantine/modals'
 import { notifications } from '@mantine/notifications'
 import { IconPlus } from '@tabler/icons-react'
-import { useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 
+import { paths } from '@/app/router/paths'
 import {
   useActivateFlightDefinition,
   useDeactivateFlightDefinition,
@@ -31,15 +30,13 @@ import {
   serializeFlightDefinitionFilters,
 } from '@/features/flight-definitions/model/urlFilters'
 import { FlightDefinitionFilters as Filters } from '@/features/flight-definitions/ui/FlightDefinitionFilters'
-import { FlightDefinitionForm } from '@/features/flight-definitions/ui/FlightDefinitionForm'
 import { FlightDefinitionTable } from '@/features/flight-definitions/ui/FlightDefinitionTable'
 import { ApiClientError } from '@/shared/api/apiClient'
+import { useState } from 'react'
 
 export function FlightDefinitionsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [formOpened, setFormOpened] = useState(false)
-  const [editing, setEditing] = useState<FlightDefinition | null>(null)
-  const [formTab, setFormTab] = useState<'details' | 'announcements'>('details')
+  const navigate = useNavigate()
   const [pendingId, setPendingId] = useState<string | null>(null)
   const filters = parseFlightDefinitionFilters(searchParams)
   const definitions = useFlightDefinitions(filters)
@@ -49,24 +46,6 @@ export function FlightDefinitionsPage() {
   function updateFilters(changes: Partial<FlightDefinitionFilters>) {
     const next = { ...filters, ...changes }
     setSearchParams(serializeFlightDefinitionFilters(next), { replace: true })
-  }
-
-  function openCreate() {
-    setEditing(null)
-    setFormTab('details')
-    setFormOpened(true)
-  }
-
-  function openEdit(item: FlightDefinition) {
-    setEditing(item)
-    setFormTab('details')
-    setFormOpened(true)
-  }
-
-  function openAnnouncements(item: FlightDefinition) {
-    setEditing(item)
-    setFormTab('announcements')
-    setFormOpened(true)
   }
 
   async function changeActive(item: FlightDefinition, active: boolean) {
@@ -123,7 +102,10 @@ export function FlightDefinitionsPage() {
           </Text>
         </div>
 
-        <Button leftSection={<IconPlus size={18} />} onClick={openCreate}>
+        <Button
+          leftSection={<IconPlus size={18} />}
+          onClick={() => navigate(paths.flightDefinitionNew)}
+        >
           Добавить карточку
         </Button>
       </Group>
@@ -174,8 +156,14 @@ export function FlightDefinitionsPage() {
               <FlightDefinitionTable
                 items={definitions.data.items}
                 pendingId={pendingId}
-                onEdit={openEdit}
-                onConfigureAnnouncements={openAnnouncements}
+                onEdit={(item) =>
+                  navigate(paths.flightDefinitionDetailsPath(item.id))
+                }
+                onConfigureAnnouncements={(item) =>
+                  navigate(
+                    paths.flightDefinitionDetailsPath(item.id, 'announcements'),
+                  )
+                }
                 onActivate={(item) => void changeActive(item, true)}
                 onDeactivate={confirmDeactivate}
               />
@@ -196,14 +184,6 @@ export function FlightDefinitionsPage() {
         </Stack>
       </Paper>
 
-      {formOpened && (
-        <FlightDefinitionForm
-          opened
-          flightDefinition={editing}
-          initialTab={formTab}
-          onClose={() => setFormOpened(false)}
-        />
-      )}
     </Stack>
   )
 }

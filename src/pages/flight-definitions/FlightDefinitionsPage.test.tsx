@@ -4,7 +4,7 @@ import { Notifications } from '@mantine/notifications'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, useLocation } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { FlightDefinitionsPage } from './FlightDefinitionsPage'
@@ -51,10 +51,22 @@ function renderPage(initialEntry = '/flight-definitions') {
         <QueryClientProvider client={queryClient}>
           <MemoryRouter initialEntries={[initialEntry]}>
             <FlightDefinitionsPage />
+            <LocationProbe />
           </MemoryRouter>
         </QueryClientProvider>
       </ModalsProvider>
     </MantineProvider>,
+  )
+}
+
+function LocationProbe() {
+  const location = useLocation()
+
+  return (
+    <div data-testid="location">
+      {location.pathname}
+      {location.search}
+    </div>
   )
 }
 
@@ -107,26 +119,23 @@ describe('FlightDefinitionsPage', () => {
     expect(screen.getByText('Активна')).toBeInTheDocument()
   })
 
-  it('opens announcement settings directly from the flight actions menu', async () => {
-    const fetchMock = vi.fn((input: RequestInfo | URL) => {
-      const url = String(input)
+  it('navigates to the create page', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(listResponse())
+    vi.stubGlobal('fetch', fetchMock)
+    const user = userEvent.setup()
 
-      if (url.includes('/announcement-configs')) return Promise.resolve(apiResponse([]))
-      if (url.includes('/audio-assets')) return Promise.resolve(apiResponse([]))
-      if (url.includes('/airports')) {
-        return Promise.resolve(
-          apiResponse({
-            items: [],
-            pagination: {
-              page: 1,
-              limit: 100,
-              totalItems: 0,
-              totalPages: 0,
-            },
-          }),
-        )
-      }
+    renderPage()
 
+    await screen.findByText('Карточки не найдены')
+    await user.click(screen.getByRole('button', { name: 'Добавить карточку' }))
+
+    expect(screen.getByTestId('location')).toHaveTextContent(
+      '/flight-definitions/new',
+    )
+  })
+
+  it('navigates to details and announcement settings from the actions menu', async () => {
+    const fetchMock = vi.fn(() => {
       return Promise.resolve(
         listResponse([
           {
@@ -150,14 +159,22 @@ describe('FlightDefinitionsPage', () => {
     await user.click(
       await screen.findByRole('button', { name: 'Действия для рейса 5F123' }),
     )
+    await user.click(await screen.findByRole('menuitem', { name: 'Редактировать' }))
+
+    expect(screen.getByTestId('location')).toHaveTextContent(
+      '/flight-definitions/01900000-0000-7000-8000-000000000001?tab=details',
+    )
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Действия для рейса 5F123' }),
+    )
     await user.click(
       await screen.findByRole('menuitem', { name: 'Настроить объявления' }),
     )
 
-    expect(await screen.findByText('Объявления рейса')).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Начало регистрации' }),
-    ).toBeInTheDocument()
+    expect(screen.getByTestId('location')).toHaveTextContent(
+      '/flight-definitions/01900000-0000-7000-8000-000000000001?tab=announcements',
+    )
   })
 
   it('shows a retry action when the list request fails', async () => {
