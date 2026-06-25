@@ -1,6 +1,6 @@
 import { MantineProvider } from '@mantine/core'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -221,13 +221,19 @@ describe('FlightAnnouncementConfigsPanel', () => {
     ])
   })
 
-  it('enables saving a new language variant after adding a valid segment', async () => {
+  it('reveals the new language variant form from a button and hides it after save', async () => {
     const fetchMock = mockPanelApi([config()])
     const user = userEvent.setup()
 
     renderPanel()
 
-    expect(await screen.findByText('Добавьте хотя бы один сегмент.')).toBeInTheDocument()
+    await screen.findByText('Text inițial')
+    expect(screen.queryByText('Новый языковой вариант')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Добавить вариант' }))
+
+    expect(await screen.findByText('Новый языковой вариант')).toBeInTheDocument()
+    expect(screen.getByText('Добавьте хотя бы один сегмент.')).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Сохранить вариант' })[1]).toBeDisabled()
 
     await user.click(screen.getAllByRole('button', { name: 'Добавить сегмент' })[1])
@@ -251,6 +257,28 @@ describe('FlightAnnouncementConfigsPanel', () => {
       languageCode: 'ro-MD',
       segments: [{ sortOrder: 1, type: 'pause', durationMs: 700 }],
     })
+    await waitFor(() => {
+      expect(screen.queryByText('Новый языковой вариант')).not.toBeInTheDocument()
+    })
+  })
+
+  it('cancels the new language variant form without sending a create request', async () => {
+    const fetchMock = mockPanelApi([config()])
+    const user = userEvent.setup()
+
+    renderPanel()
+
+    await screen.findByText('Text inițial')
+    await user.click(screen.getByRole('button', { name: 'Добавить вариант' }))
+    expect(await screen.findByText('Новый языковой вариант')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Отмена' }))
+
+    expect(screen.queryByText('Новый языковой вариант')).not.toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.find(
+        ([url, init]) => String(url).endsWith('/variants') && init?.method === 'POST',
+      ),
+    ).toBeUndefined()
   })
 
   it('moves segments up and down before saving the variant payload', async () => {

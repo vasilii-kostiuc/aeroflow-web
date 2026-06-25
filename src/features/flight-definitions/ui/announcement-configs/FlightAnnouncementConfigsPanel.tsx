@@ -433,6 +433,7 @@ function AnnouncementConfigCard({
   const [variant, setVariant] = useState<AnnouncementVariantInput>(
     defaultVariant('', config.variants.length + 1),
   )
+  const [addingVariant, setAddingVariant] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const effectiveVariant = {
     ...variant,
@@ -466,13 +467,20 @@ function AnnouncementConfigCard({
         input: normalizeVariant(effectiveVariant),
       })
       setVariant(defaultVariant(initialLanguage, config.variants.length + 2))
+      setAddingVariant(false)
     } catch (mutationError) {
       setError(errorMessage(mutationError))
     }
   }
 
-  function resetVariantDraft() {
+  function startVariantDraft() {
     setVariant(defaultVariant(initialLanguage, config.variants.length + 1))
+    setAddingVariant(true)
+  }
+
+  function cancelVariantDraft() {
+    setVariant(defaultVariant(initialLanguage, config.variants.length + 1))
+    setAddingVariant(false)
   }
 
   return (
@@ -563,94 +571,99 @@ function AnnouncementConfigCard({
         ))}
       </Stack>
 
-      <Paper withBorder p="sm">
-        <Stack gap="sm">
-          <Group justify="space-between" align="flex-start">
-            <Stack gap={2}>
-              <Group gap="xs">
-                <Text fw={600}>{effectiveVariant.languageCode || 'Новый язык'}</Text>
-                <Badge color={variant.enabled ? 'green' : 'gray'} variant="light">
-                  {variant.enabled ? 'включён' : 'выключен'}
-                </Badge>
-                <Badge variant="light">{variant.segments.length} сегм.</Badge>
+      {addingVariant ? (
+        <Paper withBorder p="sm">
+          <Stack gap="sm">
+            <Group justify="space-between" align="flex-start">
+              <Stack gap={2}>
+                <Group gap="xs">
+                  <Text fw={600}>{effectiveVariant.languageCode || 'Новый язык'}</Text>
+                  <Badge color={variant.enabled ? 'green' : 'gray'} variant="light">
+                    {variant.enabled ? 'включён' : 'выключен'}
+                  </Badge>
+                  <Badge variant="light">{variant.segments.length} сегм.</Badge>
+                </Group>
+                <Text size="xs" c="dimmed">
+                  Новый языковой вариант
+                </Text>
+              </Stack>
+              <Group gap="xs" justify="flex-end">
+                <Switch
+                  label="Вариант включён"
+                  checked={variant.enabled}
+                  onChange={(event) => {
+                    const checked = event.currentTarget.checked
+                    setVariant((current) => ({
+                      ...current,
+                      enabled: checked,
+                    }))
+                  }}
+                />
+                <Button
+                  size="xs"
+                  variant="light"
+                  loading={addVariantMutation.isPending}
+                  disabled={!canSaveVariant(effectiveVariant)}
+                  onClick={() => void addVariant()}
+                >
+                  Сохранить вариант
+                </Button>
+                <Button size="xs" variant="default" onClick={cancelVariantDraft}>
+                  Отмена
+                </Button>
               </Group>
-              <Text size="xs" c="dimmed">
-                Новый языковой вариант
-              </Text>
-            </Stack>
-            <Group gap="xs" justify="flex-end">
-              <Switch
-                label="Вариант включён"
-                checked={variant.enabled}
-                onChange={(event) => {
-                  const checked = event.currentTarget.checked
+            </Group>
+
+            <Group grow align="flex-end">
+              <LanguageSelect
+                value={effectiveVariant.languageCode}
+                languages={languages.data ?? []}
+                loading={languages.isLoading}
+                onChange={(languageCode) =>
+                  setVariant((current) => ({ ...current, languageCode }))
+                }
+              />
+              <NumberInput
+                label="Порядок языка"
+                min={1}
+                value={variant.sortOrder}
+                onChange={(value) =>
                   setVariant((current) => ({
                     ...current,
-                    enabled: checked,
+                    sortOrder: typeof value === 'number' ? value : 1,
                   }))
-                }}
+                }
               />
-              <Button
-                size="xs"
-                variant="light"
-                loading={addVariantMutation.isPending}
-                disabled={!canSaveVariant(effectiveVariant)}
-                onClick={() => void addVariant()}
-              >
-                Сохранить вариант
-              </Button>
-              <Button
-                size="xs"
-                variant="subtle"
-                color="red"
-                leftSection={<IconTrash size={14} />}
-                onClick={resetVariantDraft}
-              >
-                Удалить вариант
-              </Button>
             </Group>
-          </Group>
 
-          <Group grow align="flex-end">
-            <LanguageSelect
-              value={effectiveVariant.languageCode}
-              languages={languages.data ?? []}
-              loading={languages.isLoading}
-              onChange={(languageCode) =>
-                setVariant((current) => ({ ...current, languageCode }))
+            <SegmentList
+              announcementType={config.announcementType}
+              languageCode={effectiveVariant.languageCode}
+              ariaContext="нового варианта"
+              segments={variant.segments}
+              audioAssets={audioAssets.data ?? []}
+              onChange={(segments) =>
+                setVariant((current) => ({ ...current, segments }))
               }
             />
-            <NumberInput
-              label="Порядок языка"
-              min={1}
-              value={variant.sortOrder}
-              onChange={(value) =>
-                setVariant((current) => ({
-                  ...current,
-                  sortOrder: typeof value === 'number' ? value : 1,
-                }))
-              }
-            />
-          </Group>
 
-          <SegmentList
-            announcementType={config.announcementType}
-            languageCode={effectiveVariant.languageCode}
-            ariaContext="нового варианта"
-            segments={variant.segments}
-            audioAssets={audioAssets.data ?? []}
-            onChange={(segments) =>
-              setVariant((current) => ({ ...current, segments }))
-            }
-          />
-
-          {variantHint && (
-            <Text size="xs" c="dimmed">
-              {variantHint}
-            </Text>
-          )}
-        </Stack>
-      </Paper>
+            {variantHint && (
+              <Text size="xs" c="dimmed">
+                {variantHint}
+              </Text>
+            )}
+          </Stack>
+        </Paper>
+      ) : (
+        <Button
+          w="fit-content"
+          variant="light"
+          leftSection={<IconPlus size={16} />}
+          onClick={startVariantDraft}
+        >
+          Добавить вариант
+        </Button>
+      )}
 
       {error && (
         <Alert color="red" icon={<IconAlertCircle size={18} />}>
