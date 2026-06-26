@@ -8,6 +8,7 @@ import { FlightDefinitionsPage } from '@/pages/flight-definitions/FlightDefiniti
 import { FlightDefinitionCreatePage } from '@/pages/flight-definitions/FlightDefinitionCreatePage'
 import { FlightDefinitionDetailsPage } from '@/pages/flight-definitions/FlightDefinitionDetailsPage'
 import { AirportsPage } from '@/pages/airports/AirportsPage'
+import { DispatcherPage } from '@/pages/dispatcher/DispatcherPage'
 import { LoginPage } from '@/pages/login/LoginPage'
 import { NotFoundPage } from '@/pages/not-found/NotFoundPage'
 
@@ -46,6 +47,10 @@ export const router = createBrowserRouter([
       {
         path: paths.airports,
         element: <AirportsPage />,
+      },
+      {
+        path: paths.dispatcher,
+        element: <DispatcherPage />,
       },
     ],
   },
