@@ -1,5 +1,6 @@
 import type { FlightDefinition } from '@/features/flight-definitions/model/types'
 
+import { isFinishedStatus } from './labels'
 import type {
   BoardFlight,
   DispatcherActionType,
@@ -45,12 +46,7 @@ export function buildBoardFlights(
  * begin a new run, so it reappears under its first action.
  */
 export function hasFinishedRun(flight: BoardFlight): boolean {
-  return (
-    flight.status === 'boarding' ||
-    flight.status === 'arrival_announced' ||
-    flight.status === 'completed' ||
-    flight.status === 'cancelled'
-  )
+  return isFinishedStatus(flight.status)
 }
 
 /**

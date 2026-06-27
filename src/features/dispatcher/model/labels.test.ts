@@ -14,4 +14,12 @@ describe('board status display', () => {
     expect(boardStatusLabel('check_in_open')).toBe('Регистрация открыта')
     expect(boardStatusLabel('check_in_closed')).toBe('Регистрация закрыта')
   })
+
+  it('shows a finished run as not started (ready for a new run)', () => {
+    expect(isBoardStarted('boarding')).toBe(false)
+    expect(boardStatusLabel('boarding')).toBe(boardStatusLabel('not_started'))
+    expect(boardStatusLabel('arrival_announced')).toBe(
+      boardStatusLabel('not_started'),
+    )
+  })
 })

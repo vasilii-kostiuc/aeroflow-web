@@ -25,14 +25,35 @@ export const statusLabels: Record<BoardStatus, string> = {
   cancelled: 'Отменён',
 }
 
+const FINISHED_STATUSES: BoardStatus[] = [
+  'boarding',
+  'arrival_announced',
+  'completed',
+  'cancelled',
+]
+
 /**
- * For the dispatcher a `scheduled` occurrence (created but not yet acted upon)
- * is indistinguishable from a card without an occurrence: registration has not
- * started either way. The occurrence is an implementation detail, so the board
- * collapses both into a single "not started" state.
+ * A run has reached the final status of its lifecycle and is ready to be
+ * superseded by a new run. boarding/arrival_announced are reachable today;
+ * completed/cancelled are reserved for a future completion action.
+ */
+export function isFinishedStatus(status: BoardStatus): boolean {
+  return FINISHED_STATUSES.includes(status)
+}
+
+/**
+ * Whether the card is in an active registration cycle. For the dispatcher both a
+ * `scheduled` occurrence (created but not acted upon) and a *finished* one (its
+ * run is over and the card is ready for a new run) read as "not started":
+ * registration is not currently in progress. The occurrence is an implementation
+ * detail, so the board collapses these into a single "not started" state.
  */
 export function isBoardStarted(status: BoardStatus): boolean {
-  return status !== 'not_started' && status !== 'scheduled'
+  return (
+    status !== 'not_started' &&
+    status !== 'scheduled' &&
+    !isFinishedStatus(status)
+  )
 }
 
 export function boardStatusLabel(status: BoardStatus): string {
