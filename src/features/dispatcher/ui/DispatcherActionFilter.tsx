@@ -1,23 +1,23 @@
 import { Button, Group } from '@mantine/core'
 
-import { actionLabels, dispatcherActions } from '../model/labels'
-import type { DispatcherActionType } from '../model/types'
+import { dispatcherFilters, filterLabels } from '../model/labels'
+import type { DispatcherFilterType } from '../model/types'
 
 type Props = {
-  value: DispatcherActionType
-  onChange: (action: DispatcherActionType) => void
+  value: DispatcherFilterType
+  onChange: (action: DispatcherFilterType) => void
 }
 
 export function DispatcherActionFilter({ value, onChange }: Props) {
   return (
     <Group gap="xs">
-      {dispatcherActions.map((action) => (
+      {dispatcherFilters.map((action) => (
         <Button
           key={action}
           variant={action === value ? 'filled' : 'default'}
           onClick={() => onChange(action)}
         >
-          {actionLabels[action]}
+          {filterLabels[action]}
         </Button>
       ))}
     </Group>

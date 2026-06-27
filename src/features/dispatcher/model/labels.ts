@@ -1,4 +1,8 @@
-import type { BoardStatus, DispatcherActionType } from './types'
+import type {
+  BoardStatus,
+  DispatcherActionType,
+  DispatcherFilterType,
+} from './types'
 
 export const dispatcherActions: DispatcherActionType[] = [
   'check_in_opening',
@@ -7,11 +11,22 @@ export const dispatcherActions: DispatcherActionType[] = [
   'arrival',
 ]
 
+/** Action filters shown on the board: the four launch actions plus "start next run". */
+export const dispatcherFilters: DispatcherFilterType[] = [
+  ...dispatcherActions,
+  'start_next_run',
+]
+
 export const actionLabels: Record<DispatcherActionType, string> = {
   check_in_opening: 'Начало регистрации',
   check_in_closing: 'Окончание регистрации',
   boarding_invitation: 'Посадка',
   arrival: 'Прибытие',
+}
+
+export const filterLabels: Record<DispatcherFilterType, string> = {
+  ...actionLabels,
+  start_next_run: 'Новый запуск',
 }
 
 export const statusLabels: Record<BoardStatus, string> = {

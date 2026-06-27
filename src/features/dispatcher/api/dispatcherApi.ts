@@ -39,6 +39,21 @@ export function ensureManualOccurrence(input: {
   })
 }
 
+/**
+ * Start a new manual run of the same card on the same day. The server assigns the
+ * next sequence number and rejects with 409 when there is no previous run or the
+ * previous run has not yet reached the final status of its lifecycle.
+ */
+export function startNextManualOccurrence(input: {
+  flightDefinitionId: string
+  operationalDate: string
+}): Promise<FlightOccurrence> {
+  return apiRequest('/v1/flight-occurrences:start-next-manual', {
+    method: 'POST',
+    body: input,
+  })
+}
+
 export function launchOccurrenceAnnouncement(
   occurrenceId: string,
   action: DispatcherActionType,

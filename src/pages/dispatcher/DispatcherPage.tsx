@@ -15,15 +15,19 @@ import { IconAlertCircle } from '@tabler/icons-react'
 
 import { useAirports } from '@/features/airports/hooks/useAirports'
 import { formatAirportLabel } from '@/features/airports/model/formatAirportLabel'
-import { filterEligibleFlights } from '@/features/dispatcher/model/board'
+import {
+  filterEligibleFlights,
+  filterStartNextFlights,
+} from '@/features/dispatcher/model/board'
 import type {
   BoardFlight,
-  DispatcherActionType,
+  DispatcherFilterType,
 } from '@/features/dispatcher/model/types'
 import { useDispatcherBoard } from '@/features/dispatcher/hooks/useDispatcherBoard'
 import { DispatcherActionFilter } from '@/features/dispatcher/ui/DispatcherActionFilter'
 import { DispatcherFlightList } from '@/features/dispatcher/ui/DispatcherFlightList'
 import { DispatcherLaunchPanel } from '@/features/dispatcher/ui/DispatcherLaunchPanel'
+import { DispatcherStartNextPanel } from '@/features/dispatcher/ui/DispatcherStartNextPanel'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -31,14 +35,17 @@ function today(): string {
 
 export function DispatcherPage() {
   const [operationalDate, setOperationalDate] = useState(today)
-  const [action, setAction] = useState<DispatcherActionType>('check_in_opening')
+  const [action, setAction] = useState<DispatcherFilterType>('check_in_opening')
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const board = useDispatcherBoard(operationalDate)
   const airportsQuery = useAirports({ page: 1, limit: 100 })
 
   const eligibleFlights = useMemo(
-    () => filterEligibleFlights(action, board.flights),
+    () =>
+      action === 'start_next_run'
+        ? filterStartNextFlights(board.flights)
+        : filterEligibleFlights(action, board.flights),
     [action, board.flights],
   )
 
@@ -104,13 +111,22 @@ export function DispatcherPage() {
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 5 }}>
-            <DispatcherLaunchPanel
-              key={`${selectedFlight?.flightDefinitionId ?? 'none'}:${action}`}
-              flight={selectedFlight}
-              action={action}
-              operationalDate={operationalDate}
-              resolveAirportLabel={resolveAirportLabel}
-            />
+            {action === 'start_next_run' ? (
+              <DispatcherStartNextPanel
+                key={`${selectedFlight?.flightDefinitionId ?? 'none'}:start_next`}
+                flight={selectedFlight}
+                operationalDate={operationalDate}
+                resolveAirportLabel={resolveAirportLabel}
+              />
+            ) : (
+              <DispatcherLaunchPanel
+                key={`${selectedFlight?.flightDefinitionId ?? 'none'}:${action}`}
+                flight={selectedFlight}
+                action={action}
+                operationalDate={operationalDate}
+                resolveAirportLabel={resolveAirportLabel}
+              />
+            )}
           </Grid.Col>
         </Grid>
       )}

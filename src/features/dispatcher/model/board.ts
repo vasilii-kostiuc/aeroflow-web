@@ -68,6 +68,25 @@ export function filterEligibleFlights(
   return flights.filter((flight) => isEligibleForAction(action, flight))
 }
 
+/**
+ * A card may start a new run once its latest occurrence reached the final status
+ * of its lifecycle: boarding (departure) or arrival_announced (arrival).
+ * completed/cancelled are included for forward compatibility but are not yet
+ * reachable in the manual flow, so they do not appear on the board today.
+ */
+export function isEligibleForStartNextRun(flight: BoardFlight): boolean {
+  return (
+    flight.status === 'boarding' ||
+    flight.status === 'arrival_announced' ||
+    flight.status === 'completed' ||
+    flight.status === 'cancelled'
+  )
+}
+
+export function filterStartNextFlights(flights: BoardFlight[]): BoardFlight[] {
+  return flights.filter(isEligibleForStartNextRun)
+}
+
 export function matchesSearch(flight: BoardFlight, search: string): boolean {
   const term = search.trim().toLowerCase()
   if (!term) return true

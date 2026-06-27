@@ -5,7 +5,9 @@ import type { FlightDefinition } from '@/features/flight-definitions/model/types
 import {
   buildBoardFlights,
   filterEligibleFlights,
+  filterStartNextFlights,
   isEligibleForAction,
+  isEligibleForStartNextRun,
   matchesSearch,
 } from './board'
 import type { BoardFlight, DispatcherOccurrence } from './types'
@@ -145,6 +147,40 @@ describe('filterEligibleFlights', () => {
     const result = filterEligibleFlights('check_in_opening', flights)
 
     expect(result.map((row) => row.flightDefinitionId)).toEqual(['a'])
+  })
+})
+
+describe('isEligibleForStartNextRun', () => {
+  it('allows a new run once the previous run reached a final status', () => {
+    expect(isEligibleForStartNextRun(flight({ status: 'boarding' }))).toBe(true)
+    expect(
+      isEligibleForStartNextRun(
+        flight({ direction: 'arrival', status: 'arrival_announced' }),
+      ),
+    ).toBe(true)
+  })
+
+  it('rejects a new run while the run is still in progress', () => {
+    expect(isEligibleForStartNextRun(flight({ status: 'not_started' }))).toBe(
+      false,
+    )
+    expect(isEligibleForStartNextRun(flight({ status: 'check_in_open' }))).toBe(
+      false,
+    )
+    expect(isEligibleForStartNextRun(flight({ status: 'check_in_closed' }))).toBe(
+      false,
+    )
+  })
+
+  it('filters the board down to finished cards', () => {
+    const flights = [
+      flight({ flightDefinitionId: 'a', status: 'boarding' }),
+      flight({ flightDefinitionId: 'b', status: 'check_in_open' }),
+    ]
+
+    expect(
+      filterStartNextFlights(flights).map((row) => row.flightDefinitionId),
+    ).toEqual(['a'])
   })
 })
 

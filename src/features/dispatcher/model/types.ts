@@ -6,6 +6,12 @@ export type DispatcherActionType =
   | 'boarding_invitation'
   | 'arrival'
 
+/**
+ * Board filters: the four launch actions plus "start next run", a non-launch
+ * action that creates a fresh occurrence for a card whose run has finished.
+ */
+export type DispatcherFilterType = DispatcherActionType | 'start_next_run'
+
 export type OccurrenceStatus =
   | 'scheduled'
   | 'check_in_open'
