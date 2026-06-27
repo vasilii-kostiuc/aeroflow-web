@@ -5,9 +5,8 @@ import type { FlightDefinition } from '@/features/flight-definitions/model/types
 import {
   buildBoardFlights,
   filterEligibleFlights,
-  filterStartNextFlights,
+  hasFinishedRun,
   isEligibleForAction,
-  isEligibleForStartNextRun,
   matchesSearch,
 } from './board'
 import type { BoardFlight, DispatcherOccurrence } from './types'
@@ -150,37 +149,44 @@ describe('filterEligibleFlights', () => {
   })
 })
 
-describe('isEligibleForStartNextRun', () => {
-  it('allows a new run once the previous run reached a final status', () => {
-    expect(isEligibleForStartNextRun(flight({ status: 'boarding' }))).toBe(true)
+describe('hasFinishedRun', () => {
+  it('is true once the run reached its final status', () => {
+    expect(hasFinishedRun(flight({ status: 'boarding' }))).toBe(true)
     expect(
-      isEligibleForStartNextRun(
+      hasFinishedRun(flight({ direction: 'arrival', status: 'arrival_announced' })),
+    ).toBe(true)
+  })
+
+  it('is false while the run is still in progress', () => {
+    expect(hasFinishedRun(flight({ status: 'not_started' }))).toBe(false)
+    expect(hasFinishedRun(flight({ status: 'check_in_open' }))).toBe(false)
+    expect(hasFinishedRun(flight({ status: 'check_in_closed' }))).toBe(false)
+  })
+})
+
+describe('isEligibleForAction with a finished card', () => {
+  it('re-lists a finished departure under check-in opening', () => {
+    expect(
+      isEligibleForAction('check_in_opening', flight({ status: 'boarding' })),
+    ).toBe(true)
+  })
+
+  it('re-lists a finished arrival under arrival', () => {
+    expect(
+      isEligibleForAction(
+        'arrival',
         flight({ direction: 'arrival', status: 'arrival_announced' }),
       ),
     ).toBe(true)
   })
 
-  it('rejects a new run while the run is still in progress', () => {
-    expect(isEligibleForStartNextRun(flight({ status: 'not_started' }))).toBe(
-      false,
-    )
-    expect(isEligibleForStartNextRun(flight({ status: 'check_in_open' }))).toBe(
-      false,
-    )
-    expect(isEligibleForStartNextRun(flight({ status: 'check_in_closed' }))).toBe(
-      false,
-    )
-  })
-
-  it('filters the board down to finished cards', () => {
-    const flights = [
-      flight({ flightDefinitionId: 'a', status: 'boarding' }),
-      flight({ flightDefinitionId: 'b', status: 'check_in_open' }),
-    ]
-
+  it('does not re-list a finished card under mid-cycle actions', () => {
     expect(
-      filterStartNextFlights(flights).map((row) => row.flightDefinitionId),
-    ).toEqual(['a'])
+      isEligibleForAction('check_in_closing', flight({ status: 'boarding' })),
+    ).toBe(false)
+    expect(
+      isEligibleForAction('boarding_invitation', flight({ status: 'boarding' })),
+    ).toBe(false)
   })
 })
 

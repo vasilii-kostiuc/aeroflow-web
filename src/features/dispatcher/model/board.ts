@@ -39,9 +39,28 @@ export function buildBoardFlights(
 }
 
 /**
+ * Whether the card's latest run has reached the final status of its lifecycle
+ * (boarding for a departure, arrival_announced for an arrival; completed/cancelled
+ * reserved for a future completion action). Such a card is "finished" and may
+ * begin a new run, so it reappears under its first action.
+ */
+export function hasFinishedRun(flight: BoardFlight): boolean {
+  return (
+    flight.status === 'boarding' ||
+    flight.status === 'arrival_announced' ||
+    flight.status === 'completed' ||
+    flight.status === 'cancelled'
+  )
+}
+
+/**
  * Lifecycle-only eligibility (v1): a card is eligible for an action when its
  * direction and current status allow the underlying transition. Config/template
  * readiness is not pre-checked here and surfaces at launch time as a 422.
+ *
+ * The first action of each cycle (check_in_opening for departures, arrival for
+ * arrivals) also accepts a finished card: launching it starts a new run for the
+ * same card and date instead of acting on the old, finished occurrence.
  */
 export function isEligibleForAction(
   action: DispatcherActionType,
@@ -53,7 +72,11 @@ export function isEligibleForAction(
   switch (action) {
     case 'check_in_opening':
     case 'arrival':
-      return flight.status === 'not_started' || flight.status === 'scheduled'
+      return (
+        flight.status === 'not_started' ||
+        flight.status === 'scheduled' ||
+        hasFinishedRun(flight)
+      )
     case 'check_in_closing':
       return flight.status === 'check_in_open'
     case 'boarding_invitation':
@@ -66,25 +89,6 @@ export function filterEligibleFlights(
   flights: BoardFlight[],
 ): BoardFlight[] {
   return flights.filter((flight) => isEligibleForAction(action, flight))
-}
-
-/**
- * A card may start a new run once its latest occurrence reached the final status
- * of its lifecycle: boarding (departure) or arrival_announced (arrival).
- * completed/cancelled are included for forward compatibility but are not yet
- * reachable in the manual flow, so they do not appear on the board today.
- */
-export function isEligibleForStartNextRun(flight: BoardFlight): boolean {
-  return (
-    flight.status === 'boarding' ||
-    flight.status === 'arrival_announced' ||
-    flight.status === 'completed' ||
-    flight.status === 'cancelled'
-  )
-}
-
-export function filterStartNextFlights(flights: BoardFlight[]): BoardFlight[] {
-  return flights.filter(isEligibleForStartNextRun)
 }
 
 export function matchesSearch(flight: BoardFlight, search: string): boolean {

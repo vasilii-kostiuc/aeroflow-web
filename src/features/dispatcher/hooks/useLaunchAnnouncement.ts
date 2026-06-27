@@ -3,8 +3,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ensureManualOccurrence,
   launchOccurrenceAnnouncement,
+  startNextManualOccurrence,
 } from '../api/dispatcherApi'
 import { dispatcherKeys } from '../api/dispatcherKeys'
+import { hasFinishedRun } from '../model/board'
 import type {
   BoardFlight,
   DispatcherActionType,
@@ -20,23 +22,49 @@ export type LaunchVariables = {
 }
 
 /**
- * Launch a flight announcement: ensure today's occurrence exists for the card,
- * then run the action transition on it. Both steps are idempotent-friendly so a
- * double click does not create duplicates.
+ * Resolve the occurrence the action should run on:
+ *
+ * - a finished card (previous run reached its final status) starts a new run, so
+ *   the action runs on a fresh occurrence rather than the old, finished one;
+ * - otherwise ensure today's occurrence exists (idempotent for the first run) and
+ *   reuse the one already on the board.
+ */
+async function resolveOccurrenceId(
+  flight: BoardFlight,
+  operationalDate: string,
+): Promise<string> {
+  if (hasFinishedRun(flight)) {
+    return (
+      await startNextManualOccurrence({
+        flightDefinitionId: flight.flightDefinitionId,
+        operationalDate,
+      })
+    ).id
+  }
+
+  return (
+    flight.occurrenceId ??
+    (
+      await ensureManualOccurrence({
+        flightDefinitionId: flight.flightDefinitionId,
+        operationalDate,
+      })
+    ).id
+  )
+}
+
+/**
+ * Launch a flight announcement: resolve the occurrence to act on (starting a new
+ * run for a finished card), then run the action transition on it. A double click
+ * is safe: the button disables while pending, and the server-side state guard
+ * rejects a second new run while the first is still in progress.
  */
 export function useLaunchAnnouncement() {
   const queryClient = useQueryClient()
 
   return useMutation<LaunchOccurrenceResult, Error, LaunchVariables>({
     mutationFn: async ({ flight, action, operationalDate, payload }) => {
-      const occurrenceId =
-        flight.occurrenceId ??
-        (
-          await ensureManualOccurrence({
-            flightDefinitionId: flight.flightDefinitionId,
-            operationalDate,
-          })
-        ).id
+      const occurrenceId = await resolveOccurrenceId(flight, operationalDate)
 
       return launchOccurrenceAnnouncement(occurrenceId, action, payload)
     },
