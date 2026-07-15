@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 
 import {
   Alert,
+  Button,
   Center,
   Grid,
   Group,
@@ -11,7 +12,7 @@ import {
   TextInput,
   Title,
 } from '@mantine/core'
-import { IconAlertCircle } from '@tabler/icons-react'
+import { IconAlertCircle, IconPlaylist } from '@tabler/icons-react'
 
 import { useAirports } from '@/features/airports/hooks/useAirports'
 import { formatAirportLabel } from '@/features/airports/model/formatAirportLabel'
@@ -24,6 +25,7 @@ import { useDispatcherBoard } from '@/features/dispatcher/hooks/useDispatcherBoa
 import { DispatcherActionFilter } from '@/features/dispatcher/ui/DispatcherActionFilter'
 import { DispatcherFlightList } from '@/features/dispatcher/ui/DispatcherFlightList'
 import { DispatcherLaunchPanel } from '@/features/dispatcher/ui/DispatcherLaunchPanel'
+import { PlaybackQueueDrawer } from '@/features/dispatcher/ui/PlaybackQueueDrawer'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -33,6 +35,7 @@ export function DispatcherPage() {
   const [operationalDate, setOperationalDate] = useState(today)
   const [action, setAction] = useState<DispatcherActionType>('check_in_opening')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [statusOpened, setStatusOpened] = useState(false)
 
   const board = useDispatcherBoard(operationalDate)
   const airportsQuery = useAirports({ page: 1, limit: 100 })
@@ -71,12 +74,21 @@ export function DispatcherPage() {
             Запуск рейсовых объявлений по активным рейсам
           </Text>
         </div>
-        <TextInput
-          type="date"
-          label="Операционная дата"
-          value={operationalDate}
-          onChange={(event) => setOperationalDate(event.currentTarget.value)}
-        />
+        <Group align="flex-end">
+          <TextInput
+            type="date"
+            label="Операционная дата"
+            value={operationalDate}
+            onChange={(event) => setOperationalDate(event.currentTarget.value)}
+          />
+          <Button
+            variant="default"
+            leftSection={<IconPlaylist size={16} />}
+            onClick={() => setStatusOpened(true)}
+          >
+            Статус
+          </Button>
+        </Group>
       </Group>
 
       <DispatcherActionFilter value={action} onChange={setAction} />
@@ -114,6 +126,10 @@ export function DispatcherPage() {
           </Grid.Col>
         </Grid>
       )}
+      <PlaybackQueueDrawer
+        opened={statusOpened}
+        onClose={() => setStatusOpened(false)}
+      />
     </Stack>
   )
 }

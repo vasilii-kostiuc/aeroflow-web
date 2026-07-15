@@ -7,6 +7,7 @@ import type {
   LaunchOccurrenceResult,
   LaunchPayload,
   OperationalResource,
+  PlaybackQueue,
 } from '../model/types'
 
 const actionPathSegment: Record<DispatcherActionType, string> = {
@@ -82,4 +83,8 @@ export function getActiveCheckInCounters(): Promise<OperationalResource[]> {
 
 export function getActiveGates(): Promise<OperationalResource[]> {
   return apiRequest('/v1/admin/gates?active=true')
+}
+
+export function getPlaybackQueue(): Promise<PlaybackQueue> {
+  return apiRequest('/v1/dispatcher/playback-queue')
 }

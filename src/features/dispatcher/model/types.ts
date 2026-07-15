@@ -80,3 +80,26 @@ export type BoardFlight = {
   occurrenceId: string | null
   status: BoardStatus
 }
+
+/** One row of the playback queue screen (GET /dispatcher/playback-queue). */
+export type PlaybackQueueRow = {
+  announcementId: string
+  jobId: string
+  flightNumber: string | null
+  announcementType: DispatcherActionType
+  languages: string[]
+  checkInCounters: { id: string; code: string }[]
+  gate: { id: string; code: string } | null
+  state: 'waiting' | 'playing' | 'completed' | 'failed'
+  queuedAt: string | null
+  startedAt: string | null
+  finishedAt: string | null
+  failureReason: string | null
+}
+
+/** Read model of the playback queue: heir of the legacy Status window. */
+export type PlaybackQueue = {
+  playing: PlaybackQueueRow | null
+  waiting: PlaybackQueueRow[]
+  recent: PlaybackQueueRow[]
+}
