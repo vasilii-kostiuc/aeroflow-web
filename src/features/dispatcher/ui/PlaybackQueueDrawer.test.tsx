@@ -1,17 +1,21 @@
 import { MantineProvider } from '@mantine/core'
+import { ModalsProvider } from '@mantine/modals'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { PlaybackQueue, PlaybackQueueRow } from '../model/types'
 import { PlaybackQueueDrawer } from './PlaybackQueueDrawer'
 
-const { getPlaybackQueueMock } = vi.hoisted(() => ({
+const { getPlaybackQueueMock, cancelAnnouncementMock } = vi.hoisted(() => ({
   getPlaybackQueueMock: vi.fn<() => Promise<PlaybackQueue>>(),
+  cancelAnnouncementMock: vi.fn<(id: string) => Promise<{ id: string }>>(),
 }))
 
 vi.mock('../api/dispatcherApi', () => ({
   getPlaybackQueue: getPlaybackQueueMock,
+  cancelAnnouncement: cancelAnnouncementMock,
 }))
 
 function row(overrides: Partial<PlaybackQueueRow>): PlaybackQueueRow {
@@ -39,9 +43,11 @@ function renderDrawer() {
 
   render(
     <MantineProvider env="test">
-      <QueryClientProvider client={queryClient}>
-        <PlaybackQueueDrawer opened onClose={vi.fn()} />
-      </QueryClientProvider>
+      <ModalsProvider>
+        <QueryClientProvider client={queryClient}>
+          <PlaybackQueueDrawer opened onClose={vi.fn()} />
+        </QueryClientProvider>
+      </ModalsProvider>
     </MantineProvider>,
   )
 }
@@ -99,5 +105,60 @@ describe('PlaybackQueueDrawer', () => {
         'Не удалось обновить очередь — данные могут быть неактуальны.',
       ),
     ).toBeInTheDocument()
+  })
+
+  it('offers cancel only on waiting rows and cancels after confirmation', async () => {
+    getPlaybackQueueMock.mockResolvedValue({
+      playing: row({ jobId: 'j-playing', state: 'playing', flightNumber: 'FC100' }),
+      waiting: [
+        row({
+          jobId: 'j-waiting',
+          announcementId: 'a-waiting',
+          flightNumber: 'FC200',
+        }),
+      ],
+      recent: [],
+    })
+    cancelAnnouncementMock.mockResolvedValue({ id: 'a-waiting' })
+
+    renderDrawer()
+    const user = userEvent.setup()
+
+    // Only the waiting row exposes the cancel button.
+    expect(await screen.findByText('FC200')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Убрать' })).toHaveLength(1)
+
+    await user.click(screen.getByRole('button', { name: 'Убрать' }))
+    const modalTitle = await screen.findByText('Убрать объявление из очереди?')
+
+    // The confirmation modal repeats the action name on its confirm button.
+    const modal = modalTitle.closest('section')
+    expect(modal).not.toBeNull()
+    await user.click(within(modal!).getByRole('button', { name: 'Убрать' }))
+
+    await waitFor(() =>
+      expect(cancelAnnouncementMock).toHaveBeenCalledWith('a-waiting'),
+    )
+  })
+
+  it('shows a cancelled row in recent', async () => {
+    getPlaybackQueueMock.mockResolvedValue({
+      playing: null,
+      waiting: [],
+      recent: [
+        row({
+          jobId: 'j-cancelled',
+          state: 'cancelled',
+          flightNumber: 'FC400',
+          finishedAt: '2026-07-10T09:06:00+00:00',
+        }),
+      ],
+    })
+
+    renderDrawer()
+
+    expect(await screen.findByText('FC400')).toBeInTheDocument()
+    expect(screen.getByText('Отменено')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Убрать' })).toBeNull()
   })
 })

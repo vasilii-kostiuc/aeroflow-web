@@ -88,3 +88,16 @@ export function getActiveGates(): Promise<OperationalResource[]> {
 export function getPlaybackQueue(): Promise<PlaybackQueue> {
   return apiRequest('/v1/dispatcher/playback-queue')
 }
+
+/**
+ * Remove a waiting announcement from the playback queue (task 018). Cancels the
+ * announcement itself — the flight occurrence is not touched. Idempotent on the
+ * server: repeating the call returns the already-cancelled announcement.
+ */
+export function cancelAnnouncement(
+  announcementId: string,
+): Promise<{ id: string }> {
+  return apiRequest(`/v1/announcements/${announcementId}/cancel`, {
+    method: 'POST',
+  })
+}
