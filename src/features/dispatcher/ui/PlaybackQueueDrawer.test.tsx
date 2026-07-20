@@ -8,14 +8,16 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PlaybackQueue, PlaybackQueueRow } from '../model/types'
 import { PlaybackQueueDrawer } from './PlaybackQueueDrawer'
 
-const { getPlaybackQueueMock, cancelAnnouncementMock } = vi.hoisted(() => ({
+const { getPlaybackQueueMock, cancelAnnouncementMock, stopAnnouncementPlaybackMock } = vi.hoisted(() => ({
   getPlaybackQueueMock: vi.fn<() => Promise<PlaybackQueue>>(),
   cancelAnnouncementMock: vi.fn<(id: string) => Promise<{ id: string }>>(),
+  stopAnnouncementPlaybackMock: vi.fn<(id: string) => Promise<{ announcementId: string }>>(),
 }))
 
 vi.mock('../api/dispatcherApi', () => ({
   getPlaybackQueue: getPlaybackQueueMock,
   cancelAnnouncement: cancelAnnouncementMock,
+  stopAnnouncementPlayback: stopAnnouncementPlaybackMock,
 }))
 
 function row(overrides: Partial<PlaybackQueueRow>): PlaybackQueueRow {
@@ -139,6 +141,70 @@ describe('PlaybackQueueDrawer', () => {
     await waitFor(() =>
       expect(cancelAnnouncementMock).toHaveBeenCalledWith('a-waiting'),
     )
+  })
+
+  it('offers stop only on the playing row and stops after confirmation', async () => {
+    getPlaybackQueueMock.mockResolvedValue({
+      playing: row({
+        jobId: 'j-playing',
+        announcementId: 'a-playing',
+        state: 'playing',
+        flightNumber: 'FC100',
+      }),
+      waiting: [
+        row({
+          jobId: 'j-waiting',
+          announcementId: 'a-waiting',
+          flightNumber: 'FC200',
+        }),
+      ],
+      recent: [],
+    })
+    stopAnnouncementPlaybackMock.mockResolvedValue({ announcementId: 'a-playing' })
+    // vi.fn() history survives across tests; drop earlier cancel calls so the
+    // "stop does not cancel" assertion below checks this test only.
+    cancelAnnouncementMock.mockClear()
+
+    renderDrawer()
+    const user = userEvent.setup()
+
+    // Only the playing row exposes the stop button.
+    expect(await screen.findByText('FC100')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Стоп' })).toHaveLength(1)
+
+    await user.click(screen.getByRole('button', { name: 'Стоп' }))
+    const modalTitle = await screen.findByText('Остановить текущее объявление?')
+
+    const modal = modalTitle.closest('section')
+    expect(modal).not.toBeNull()
+    await user.click(within(modal!).getByRole('button', { name: 'Стоп' }))
+
+    await waitFor(() =>
+      expect(stopAnnouncementPlaybackMock).toHaveBeenCalledWith('a-playing'),
+    )
+    expect(cancelAnnouncementMock).not.toHaveBeenCalled()
+  })
+
+  it('shows an interrupted row in recent without action buttons', async () => {
+    getPlaybackQueueMock.mockResolvedValue({
+      playing: null,
+      waiting: [],
+      recent: [
+        row({
+          jobId: 'j-interrupted',
+          state: 'interrupted',
+          flightNumber: 'FC500',
+          finishedAt: '2026-07-10T09:07:00+00:00',
+        }),
+      ],
+    })
+
+    renderDrawer()
+
+    expect(await screen.findByText('FC500')).toBeInTheDocument()
+    expect(screen.getByText('Прервано')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Стоп' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Убрать' })).toBeNull()
   })
 
   it('shows a cancelled row in recent', async () => {

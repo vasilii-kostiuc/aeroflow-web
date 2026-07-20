@@ -101,3 +101,11 @@ export function cancelAnnouncement(
     method: 'POST',
   })
 }
+
+export function stopAnnouncementPlayback(
+  announcementId: string,
+): Promise<{ announcementId: string }> {
+  return apiRequest(`/v1/dispatcher/playback-queue/${announcementId}/stop`, {
+    method: 'POST',
+  })
+}

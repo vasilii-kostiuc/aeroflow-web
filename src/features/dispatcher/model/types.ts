@@ -90,7 +90,7 @@ export type PlaybackQueueRow = {
   languages: string[]
   checkInCounters: { id: string; code: string }[]
   gate: { id: string; code: string } | null
-  state: 'waiting' | 'playing' | 'completed' | 'failed' | 'cancelled'
+  state: 'waiting' | 'playing' | 'completed' | 'failed' | 'cancelled' | 'interrupted'
   queuedAt: string | null
   startedAt: string | null
   finishedAt: string | null

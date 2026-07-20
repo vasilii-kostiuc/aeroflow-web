@@ -16,6 +16,7 @@ import { IconAlertCircle } from '@tabler/icons-react'
 import { actionLabels } from '../model/labels'
 import type { PlaybackQueueRow } from '../model/types'
 import { useCancelAnnouncement } from '../hooks/useCancelAnnouncement'
+import { useStopAnnouncementPlayback } from '../hooks/useStopAnnouncementPlayback'
 import { usePlaybackQueue } from '../hooks/usePlaybackQueue'
 
 const stateColors: Record<PlaybackQueueRow['state'], string> = {
@@ -24,6 +25,7 @@ const stateColors: Record<PlaybackQueueRow['state'], string> = {
   completed: 'gray',
   failed: 'red',
   cancelled: 'gray',
+  interrupted: 'orange',
 }
 
 const stateLabels: Record<PlaybackQueueRow['state'], string> = {
@@ -32,6 +34,7 @@ const stateLabels: Record<PlaybackQueueRow['state'], string> = {
   completed: 'Завершено',
   failed: 'Ошибка',
   cancelled: 'Отменено',
+  interrupted: 'Прервано',
 }
 
 function formatTime(iso: string | null): string {
@@ -47,10 +50,12 @@ function formatTime(iso: string | null): string {
 function QueueRow({
   row,
   onCancel,
+  onStop,
   cancelling,
 }: {
   row: PlaybackQueueRow
   onCancel?: (row: PlaybackQueueRow) => void
+  onStop?: (row: PlaybackQueueRow) => void
   cancelling?: boolean
 }) {
   const parameters = [
@@ -96,6 +101,11 @@ function QueueRow({
             Убрать
           </Button>
         ) : null}
+        {onStop ? (
+          <Button size="compact-xs" variant="subtle" color="red" loading={cancelling} onClick={() => onStop(row)}>
+            Стоп
+          </Button>
+        ) : null}
       </Group>
     </Group>
   )
@@ -106,12 +116,14 @@ function Section({
   rows,
   emptyMessage,
   onCancel,
+  onStop,
   cancellingId,
 }: {
   title: string
   rows: PlaybackQueueRow[]
   emptyMessage: string
   onCancel?: (row: PlaybackQueueRow) => void
+  onStop?: (row: PlaybackQueueRow) => void
   cancellingId?: string | null
 }) {
   return (
@@ -127,6 +139,7 @@ function Section({
             key={row.jobId}
             row={row}
             onCancel={onCancel}
+            onStop={onStop}
             cancelling={cancellingId === row.announcementId}
           />
         ))
@@ -150,6 +163,7 @@ export function PlaybackQueueDrawer({
 }) {
   const queue = usePlaybackQueue(opened)
   const cancelMutation = useCancelAnnouncement()
+  const stopMutation = useStopAnnouncementPlayback()
 
   function confirmCancel(row: PlaybackQueueRow) {
     modals.openConfirmModal({
@@ -163,6 +177,16 @@ export function PlaybackQueueDrawer({
       labels: { confirm: 'Убрать', cancel: 'Отмена' },
       confirmProps: { color: 'red' },
       onConfirm: () => cancelMutation.mutate(row.announcementId),
+    })
+  }
+
+  function confirmStop(row: PlaybackQueueRow) {
+    modals.openConfirmModal({
+      title: 'Остановить текущее объявление?',
+      children: <Text size="sm">Звучащее объявление будет прервано. Рейс и объявление не отменяются.</Text>,
+      labels: { confirm: 'Стоп', cancel: 'Отмена' },
+      confirmProps: { color: 'red' },
+      onConfirm: () => stopMutation.mutate(row.announcementId),
     })
   }
 
@@ -189,6 +213,8 @@ export function PlaybackQueueDrawer({
             title="Сейчас звучит"
             rows={queue.data.playing ? [queue.data.playing] : []}
             emptyMessage="Тишина — очередь свободна"
+            onStop={confirmStop}
+            cancellingId={stopMutation.isPending ? stopMutation.variables : null}
           />
           <Section
             title="В очереди"
