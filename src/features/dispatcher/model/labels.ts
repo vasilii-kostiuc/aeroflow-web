@@ -1,4 +1,4 @@
-import type { BoardStatus, DispatcherActionType } from './types'
+import type { AnnouncementType, BoardStatus, DispatcherActionType } from './types'
 
 export const dispatcherActions: DispatcherActionType[] = [
   'check_in_opening',
@@ -12,6 +12,15 @@ export const actionLabels: Record<DispatcherActionType, string> = {
   check_in_closing: 'Окончание регистрации',
   boarding_invitation: 'Посадка',
   arrival: 'Прибытие',
+}
+
+/**
+ * Labels for every announcement type the queue screen can show, including the
+ * continuation series the dispatcher never launches by hand.
+ */
+export const announcementTypeLabels: Record<AnnouncementType, string> = {
+  ...actionLabels,
+  check_in_continuation: 'Продолжение регистрации',
 }
 
 export const statusLabels: Record<BoardStatus, string> = {

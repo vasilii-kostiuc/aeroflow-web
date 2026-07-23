@@ -6,6 +6,13 @@ export type DispatcherActionType =
   | 'boarding_invitation'
   | 'arrival'
 
+/**
+ * Every announcement type that can reach the queue screen. `check_in_continuation`
+ * is not a manual dispatcher action — opening check-in starts its repeat series on
+ * the server — but its job shows up in the queue like any other.
+ */
+export type AnnouncementType = DispatcherActionType | 'check_in_continuation'
+
 export type OccurrenceStatus =
   | 'scheduled'
   | 'check_in_open'
@@ -86,15 +93,24 @@ export type PlaybackQueueRow = {
   announcementId: string
   jobId: string
   flightNumber: string | null
-  announcementType: DispatcherActionType
+  announcementType: AnnouncementType
   languages: string[]
   checkInCounters: { id: string; code: string }[]
   gate: { id: string; code: string } | null
-  state: 'waiting' | 'playing' | 'completed' | 'failed' | 'cancelled' | 'interrupted'
+  state:
+    | 'waiting'
+    | 'playing'
+    | 'rescheduled'
+    | 'completed'
+    | 'failed'
+    | 'cancelled'
+    | 'interrupted'
   queuedAt: string | null
   startedAt: string | null
   finishedAt: string | null
   failureReason: string | null
+  /** Moment the next repeat tick is due; only a `rescheduled` row carries one. */
+  nextAt: string | null
 }
 
 /** Read model of the playback queue: heir of the legacy Status window. */
