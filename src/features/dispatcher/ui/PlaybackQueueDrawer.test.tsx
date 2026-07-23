@@ -34,6 +34,7 @@ function row(overrides: Partial<PlaybackQueueRow>): PlaybackQueueRow {
     startedAt: null,
     finishedAt: null,
     failureReason: null,
+    nextAt: null,
     ...overrides,
   }
 }
@@ -203,6 +204,34 @@ describe('PlaybackQueueDrawer', () => {
 
     expect(await screen.findByText('FC500')).toBeInTheDocument()
     expect(screen.getByText('Прервано')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Стоп' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Убрать' })).toBeNull()
+  })
+
+  it('shows a repeat series waiting for its next tick without action buttons', async () => {
+    getPlaybackQueueMock.mockResolvedValue({
+      playing: null,
+      waiting: [
+        row({
+          jobId: 'j-continuation',
+          announcementId: 'a-continuation',
+          announcementType: 'check_in_continuation',
+          state: 'rescheduled',
+          flightNumber: 'FC600',
+          startedAt: '2026-07-10T09:10:00+00:00',
+          nextAt: '2026-07-10T09:20:30+00:00',
+        }),
+      ],
+      recent: [],
+    })
+
+    renderDrawer()
+
+    expect(await screen.findByText('FC600')).toBeInTheDocument()
+    expect(screen.getByText('Ждёт повтора')).toBeInTheDocument()
+    expect(screen.getByText(/Следующий повтор в/)).toBeInTheDocument()
+    // Nothing is sounding and the series ends with check-in closing, so neither
+    // action applies to this row.
     expect(screen.queryByRole('button', { name: 'Стоп' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Убрать' })).toBeNull()
   })

@@ -13,7 +13,7 @@ import {
 import { modals } from '@mantine/modals'
 import { IconAlertCircle } from '@tabler/icons-react'
 
-import { actionLabels } from '../model/labels'
+import { announcementTypeLabels } from '../model/labels'
 import type { PlaybackQueueRow } from '../model/types'
 import { useCancelAnnouncement } from '../hooks/useCancelAnnouncement'
 import { useStopAnnouncementPlayback } from '../hooks/useStopAnnouncementPlayback'
@@ -22,6 +22,7 @@ import { usePlaybackQueue } from '../hooks/usePlaybackQueue'
 const stateColors: Record<PlaybackQueueRow['state'], string> = {
   playing: 'green',
   waiting: 'blue',
+  rescheduled: 'blue',
   completed: 'gray',
   failed: 'red',
   cancelled: 'gray',
@@ -31,6 +32,7 @@ const stateColors: Record<PlaybackQueueRow['state'], string> = {
 const stateLabels: Record<PlaybackQueueRow['state'], string> = {
   playing: 'Звучит',
   waiting: 'В очереди',
+  rescheduled: 'Ждёт повтора',
   completed: 'Завершено',
   failed: 'Ошибка',
   cancelled: 'Отменено',
@@ -65,12 +67,16 @@ function QueueRow({
     row.gate ? `выход ${row.gate.code}` : null,
   ].filter(Boolean)
 
+  // A repeat series resting between ticks sounds nothing and is ended by closing
+  // check-in, so neither "Стоп" nor "Убрать" applies to it.
+  const resting = row.state === 'rescheduled'
+
   return (
     <Group justify="space-between" wrap="nowrap" py={6}>
       <div>
         <Group gap="xs">
           <Text fw={600}>{row.flightNumber ?? '—'}</Text>
-          <Text size="sm">{actionLabels[row.announcementType]}</Text>
+          <Text size="sm">{announcementTypeLabels[row.announcementType]}</Text>
           <Badge size="sm" variant="light" color={stateColors[row.state]}>
             {stateLabels[row.state]}
           </Badge>
@@ -85,12 +91,21 @@ function QueueRow({
             {row.failureReason}
           </Text>
         ) : null}
+        {resting && row.nextAt ? (
+          <Text size="xs" c="dimmed">
+            Следующий повтор в {formatTime(row.nextAt)}
+          </Text>
+        ) : null}
       </div>
       <Group gap="xs" wrap="nowrap">
         <Text size="xs" c="dimmed" style={{ whiteSpace: 'nowrap' }}>
-          {formatTime(row.finishedAt ?? row.startedAt ?? row.queuedAt)}
+          {formatTime(
+            resting
+              ? row.nextAt
+              : (row.finishedAt ?? row.startedAt ?? row.queuedAt),
+          )}
         </Text>
-        {onCancel ? (
+        {onCancel && !resting ? (
           <Button
             size="compact-xs"
             variant="subtle"
@@ -101,7 +116,7 @@ function QueueRow({
             Убрать
           </Button>
         ) : null}
-        {onStop ? (
+        {onStop && !resting ? (
           <Button size="compact-xs" variant="subtle" color="red" loading={cancelling} onClick={() => onStop(row)}>
             Стоп
           </Button>
@@ -151,8 +166,9 @@ function Section({
 /**
  * Heir of the legacy Status window: what is playing, what waits, what just
  * finished. A waiting row can be removed from the queue (task 018) — that cancels
- * only the announcement, never the flight. Stopping the current sound is the
- * next slice of the same epic.
+ * only the announcement, never the flight — and the playing row can be stopped
+ * (task 019). A repeat series waiting for its next tick (task 023) sits among the
+ * waiting rows with the time it sounds again, and offers neither action.
  */
 export function PlaybackQueueDrawer({
   opened,
@@ -170,7 +186,7 @@ export function PlaybackQueueDrawer({
       title: 'Убрать объявление из очереди?',
       children: (
         <Text size="sm">
-          {row.flightNumber ?? '—'} · {actionLabels[row.announcementType]} не
+          {row.flightNumber ?? '—'} · {announcementTypeLabels[row.announcementType]} не
           прозвучит. Рейс это не отменяет.
         </Text>
       ),
