@@ -9,9 +9,13 @@ export type DispatcherActionType =
 /**
  * Every announcement type that can reach the queue screen. `check_in_continuation`
  * is not a manual dispatcher action — opening check-in starts its repeat series on
- * the server — but its job shows up in the queue like any other.
+ * the server — but its job shows up in the queue like any other. `supplementary`
+ * is an airport-wide announcement launched from its own modal, not the flight board.
  */
-export type AnnouncementType = DispatcherActionType | 'check_in_continuation'
+export type AnnouncementType =
+  | DispatcherActionType
+  | 'check_in_continuation'
+  | 'supplementary'
 
 export type OccurrenceStatus =
   | 'scheduled'
@@ -111,6 +115,21 @@ export type PlaybackQueueRow = {
   failureReason: string | null
   /** Moment the next repeat tick is due; only a `rescheduled` row carries one. */
   nextAt: string | null
+}
+
+/**
+ * A reusable supplementary announcement preset (task 024) — heir of the legacy САО
+ * "Дополнительно" set. Carries pre-recorded/generated audio per language; the
+ * dispatcher launches one by id, optionally narrowing to a subset of its languages.
+ */
+export type SupplementaryTemplate = {
+  id: string
+  name: string
+  variants: { languageCode: string; audioAssetId: string }[]
+  languageCodes: string[]
+  active: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 /** Read model of the playback queue: heir of the legacy Status window. */

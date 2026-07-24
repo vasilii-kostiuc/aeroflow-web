@@ -168,3 +168,49 @@ export async function apiRequest<TData>(
   const payload = (await response.json()) as ApiResponse<TData>
   return payload.data
 }
+
+/**
+ * Fetch a binary response (e.g. an audio file) as a Blob, with the same auth token
+ * and single refresh-retry as apiRequest. Unlike apiRequest it does not unwrap a
+ * JSON envelope — the body is returned as-is.
+ */
+export async function apiRequestBlob(
+  path: string,
+  options: { retryAfterRefresh?: boolean } = {},
+): Promise<Blob> {
+  const { retryAfterRefresh = true } = options
+  const requestHeaders = new Headers()
+  const accessToken = authAdapter?.getAccessToken()
+
+  if (accessToken) {
+    requestHeaders.set('Authorization', `Bearer ${accessToken}`)
+  }
+
+  let response: Response
+
+  try {
+    response = await fetch(buildUrl(path), { headers: requestHeaders })
+  } catch {
+    throw new ApiClientError({
+      status: 0,
+      message: 'Не удалось связаться с сервером',
+    })
+  }
+
+  if (response.status === 401 && retryAfterRefresh && authAdapter !== null) {
+    try {
+      await refreshSession()
+    } catch (error) {
+      authAdapter.clearSession()
+      throw error
+    }
+
+    return apiRequestBlob(path, { retryAfterRefresh: false })
+  }
+
+  if (!response.ok) {
+    throw await parseError(response)
+  }
+
+  return response.blob()
+}

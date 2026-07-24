@@ -21,6 +21,7 @@ export const actionLabels: Record<DispatcherActionType, string> = {
 export const announcementTypeLabels: Record<AnnouncementType, string> = {
   ...actionLabels,
   check_in_continuation: 'Продолжение регистрации',
+  supplementary: 'Дополнительное объявление',
 }
 
 export const statusLabels: Record<BoardStatus, string> = {
