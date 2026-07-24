@@ -4,6 +4,7 @@ import {
   IconBroadcast,
   IconBuildingAirport,
   IconPlaneDeparture,
+  IconSpeakerphone,
 } from '@tabler/icons-react'
 import { NavLink as RouterNavLink, Outlet } from 'react-router'
 
@@ -57,6 +58,13 @@ export function AppLayout() {
           to={paths.airports}
           label="Аэропорты"
           leftSection={<IconBuildingAirport size={18} />}
+          onClick={close}
+        />
+        <NavLink
+          component={RouterNavLink}
+          to={paths.supplementaryTemplates}
+          label="Дополнительные объявления"
+          leftSection={<IconSpeakerphone size={18} />}
           onClick={close}
         />
         <NavLink

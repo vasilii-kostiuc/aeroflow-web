@@ -34,6 +34,7 @@ import {
 import { useLanguages } from '@/features/languages/hooks/useLanguages'
 import type { Language } from '@/features/languages/model/types'
 import { ApiClientError } from '@/shared/api/apiClient'
+import { AudioPreviewButton } from '@/shared/ui/AudioPreviewButton'
 
 import {
   useAddAnnouncementVariant,
@@ -957,6 +958,9 @@ function SegmentList({
                       <IconArrowDown size={16} />
                     </ActionIcon>
                   </Tooltip>
+                  {segment.audioAssetId ? (
+                    <AudioPreviewButton audioAssetId={segment.audioAssetId} />
+                  ) : null}
                   <Tooltip label="Редактировать">
                     <ActionIcon
                       variant="subtle"
@@ -1037,23 +1041,27 @@ function SegmentModal({
 
         {draft.type === 'audio_asset' && (
           <Stack gap="xs">
-            <Select
-              label="Аудиофайл"
-              placeholder="Выберите файл"
-              searchable
-              data={audioAssets.map((asset) => ({
-                value: asset.id,
-                label:
-                  asset.languageCode === languageCode
-                    ? `${asset.name} · ${asset.languageCode}`
-                    : `${asset.name} · ${asset.languageCode} · другой язык`,
-                disabled: !asset.active,
-              }))}
-              value={draft.audioAssetId}
-              onChange={(value) =>
-                setDraft((current) => ({ ...current, audioAssetId: value }))
-              }
-            />
+            <Group align="flex-end" wrap="nowrap" gap="xs">
+              <Select
+                label="Аудиофайл"
+                placeholder="Выберите файл"
+                searchable
+                style={{ flex: 1 }}
+                data={audioAssets.map((asset) => ({
+                  value: asset.id,
+                  label:
+                    asset.languageCode === languageCode
+                      ? `${asset.name} · ${asset.languageCode}`
+                      : `${asset.name} · ${asset.languageCode} · другой язык`,
+                  disabled: !asset.active,
+                }))}
+                value={draft.audioAssetId}
+                onChange={(value) =>
+                  setDraft((current) => ({ ...current, audioAssetId: value }))
+                }
+              />
+              <AudioPreviewButton audioAssetId={draft.audioAssetId} />
+            </Group>
             <AudioAssetUploader
               languageCode={languageCode}
               onUploaded={(audioAssetId) =>

@@ -7,5 +7,6 @@ export const paths = {
   flightDefinitionDetailsPath: (id: string, tab: 'details' | 'announcements' = 'details') =>
     `/flight-definitions/${id}?tab=${tab}`,
   airports: '/airports',
+  supplementaryTemplates: '/supplementary-announcements',
   dispatcher: '/dispatcher',
 } as const

@@ -5,6 +5,7 @@ export const dispatcherKeys = {
   checkInCounters: [...['dispatcher'], 'check-in-counters'] as const,
   gates: [...['dispatcher'], 'gates'] as const,
   playbackQueue: [...['dispatcher'], 'playback-queue'] as const,
+  supplementaryTemplates: [...['dispatcher'], 'supplementary-templates'] as const,
   announcementLanguages: (
     flightDefinitionId: string,
     announcementType: string,

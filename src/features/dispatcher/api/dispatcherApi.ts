@@ -8,6 +8,7 @@ import type {
   LaunchPayload,
   OperationalResource,
   PlaybackQueue,
+  SupplementaryTemplate,
 } from '../model/types'
 
 const actionPathSegment: Record<DispatcherActionType, string> = {
@@ -107,5 +108,30 @@ export function stopAnnouncementPlayback(
 ): Promise<{ announcementId: string }> {
   return apiRequest(`/v1/dispatcher/playback-queue/${announcementId}/stop`, {
     method: 'POST',
+  })
+}
+
+/**
+ * Active supplementary announcement presets (task 024) — the heir of the legacy САО
+ * "Дополнительно" set. The dispatcher launches one of these; it is not tied to a
+ * flight.
+ */
+export function getSupplementaryTemplates(): Promise<SupplementaryTemplate[]> {
+  return apiRequest('/v1/dispatcher/supplementary-announcements/templates')
+}
+
+/**
+ * Launch an airport-wide supplementary announcement (task 024) from a preset. The
+ * server assembles the preset's pre-recorded/generated audio for the chosen
+ * languages and queues it at priority 50, behind flight announcements. An empty
+ * `languages` means all of the preset's configured languages.
+ */
+export function launchSupplementaryAnnouncement(input: {
+  templateId: string
+  languages: string[]
+}): Promise<{ id: string }> {
+  return apiRequest('/v1/dispatcher/supplementary-announcements', {
+    method: 'POST',
+    body: input,
   })
 }

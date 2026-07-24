@@ -12,7 +12,11 @@ import {
   TextInput,
   Title,
 } from '@mantine/core'
-import { IconAlertCircle, IconPlaylist } from '@tabler/icons-react'
+import {
+  IconAlertCircle,
+  IconPlaylist,
+  IconSpeakerphone,
+} from '@tabler/icons-react'
 
 import { useAirports } from '@/features/airports/hooks/useAirports'
 import { formatAirportLabel } from '@/features/airports/model/formatAirportLabel'
@@ -26,6 +30,7 @@ import { DispatcherActionFilter } from '@/features/dispatcher/ui/DispatcherActio
 import { DispatcherFlightList } from '@/features/dispatcher/ui/DispatcherFlightList'
 import { DispatcherLaunchPanel } from '@/features/dispatcher/ui/DispatcherLaunchPanel'
 import { PlaybackQueueDrawer } from '@/features/dispatcher/ui/PlaybackQueueDrawer'
+import { SupplementaryAnnouncementModal } from '@/features/dispatcher/ui/SupplementaryAnnouncementModal'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -36,6 +41,7 @@ export function DispatcherPage() {
   const [action, setAction] = useState<DispatcherActionType>('check_in_opening')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [statusOpened, setStatusOpened] = useState(false)
+  const [supplementaryOpened, setSupplementaryOpened] = useState(false)
 
   const board = useDispatcherBoard(operationalDate)
   const airportsQuery = useAirports({ page: 1, limit: 100 })
@@ -83,6 +89,13 @@ export function DispatcherPage() {
           />
           <Button
             variant="default"
+            leftSection={<IconSpeakerphone size={16} />}
+            onClick={() => setSupplementaryOpened(true)}
+          >
+            Дополнительное объявление
+          </Button>
+          <Button
+            variant="default"
             leftSection={<IconPlaylist size={16} />}
             onClick={() => setStatusOpened(true)}
           >
@@ -126,6 +139,10 @@ export function DispatcherPage() {
           </Grid.Col>
         </Grid>
       )}
+      <SupplementaryAnnouncementModal
+        opened={supplementaryOpened}
+        onClose={() => setSupplementaryOpened(false)}
+      />
       <PlaybackQueueDrawer
         opened={statusOpened}
         onClose={() => setStatusOpened(false)}
