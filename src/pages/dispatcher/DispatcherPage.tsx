@@ -9,7 +9,6 @@ import {
   Loader,
   Stack,
   Text,
-  TextInput,
   Title,
 } from '@mantine/core'
 import {
@@ -35,19 +34,14 @@ import { EmergencyModeBanner } from '@/features/dispatcher/ui/EmergencyModeBanne
 import { PlaybackQueueDrawer } from '@/features/dispatcher/ui/PlaybackQueueDrawer'
 import { SupplementaryAnnouncementModal } from '@/features/dispatcher/ui/SupplementaryAnnouncementModal'
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
 export function DispatcherPage() {
-  const [operationalDate, setOperationalDate] = useState(today)
   const [action, setAction] = useState<DispatcherActionType>('check_in_opening')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [statusOpened, setStatusOpened] = useState(false)
   const [supplementaryOpened, setSupplementaryOpened] = useState(false)
   const [emergencyOpened, setEmergencyOpened] = useState(false)
 
-  const board = useDispatcherBoard(operationalDate)
+  const board = useDispatcherBoard()
   const airportsQuery = useAirports({ page: 1, limit: 100 })
 
   const eligibleFlights = useMemo(
@@ -85,12 +79,6 @@ export function DispatcherPage() {
           </Text>
         </div>
         <Group align="flex-end">
-          <TextInput
-            type="date"
-            label="Операционная дата"
-            value={operationalDate}
-            onChange={(event) => setOperationalDate(event.currentTarget.value)}
-          />
           <Button
             variant="default"
             leftSection={<IconSpeakerphone size={16} />}
@@ -136,6 +124,7 @@ export function DispatcherPage() {
           <Grid.Col span={{ base: 12, md: 7 }}>
             <DispatcherFlightList
               flights={eligibleFlights}
+              operationalDate={board.operationalDate}
               selectedId={selectedFlight?.flightDefinitionId ?? null}
               onSelect={(flight) => setSelectedId(flight.flightDefinitionId)}
               resolveAirportLabel={resolveAirportLabel}
@@ -146,7 +135,6 @@ export function DispatcherPage() {
               key={`${selectedFlight?.flightDefinitionId ?? 'none'}:${action}`}
               flight={selectedFlight}
               action={action}
-              operationalDate={operationalDate}
               resolveAirportLabel={resolveAirportLabel}
             />
           </Grid.Col>

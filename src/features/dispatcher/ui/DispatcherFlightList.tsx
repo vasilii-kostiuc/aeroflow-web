@@ -3,12 +3,18 @@ import { useMemo, useState } from 'react'
 import { Badge, Card, Group, Stack, Text, TextInput } from '@mantine/core'
 import { IconSearch } from '@tabler/icons-react'
 
-import { matchesSearch } from '../model/board'
-import { boardStatusLabel, isBoardStarted } from '../model/labels'
+import { isCarriedOver, matchesSearch } from '../model/board'
+import {
+  boardStatusLabel,
+  formatOperationalDate,
+  isBoardStarted,
+} from '../model/labels'
 import type { BoardFlight } from '../model/types'
 
 type Props = {
   flights: BoardFlight[]
+  /** The board's operational day; a card whose run started earlier is marked. */
+  operationalDate: string | null
   selectedId: string | null
   onSelect: (flight: BoardFlight) => void
   resolveAirportLabel: (code: string) => string
@@ -22,6 +28,7 @@ function routeCode(flight: BoardFlight): string {
 
 export function DispatcherFlightList({
   flights,
+  operationalDate,
   selectedId,
   onSelect,
   resolveAirportLabel,
@@ -68,12 +75,19 @@ export function DispatcherFlightList({
                   {resolveAirportLabel(routeCode(flight))}
                 </Text>
               </div>
-              <Badge
-                variant="light"
-                color={isBoardStarted(flight.status) ? 'blue' : 'gray'}
-              >
-                {boardStatusLabel(flight.status)}
-              </Badge>
+              <Group gap="xs" wrap="nowrap">
+                {isCarriedOver(flight, operationalDate) && flight.occurrenceDate ? (
+                  <Badge variant="outline" color="orange">
+                    с {formatOperationalDate(flight.occurrenceDate)}
+                  </Badge>
+                ) : null}
+                <Badge
+                  variant="light"
+                  color={isBoardStarted(flight.status) ? 'blue' : 'gray'}
+                >
+                  {boardStatusLabel(flight.status)}
+                </Badge>
+              </Group>
             </Group>
           </Card>
         ))

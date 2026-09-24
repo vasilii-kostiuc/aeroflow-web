@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { boardStatusLabel, isBoardStarted } from './labels'
+import {
+  boardStatusLabel,
+  formatOperationalDate,
+  isBoardStarted,
+} from './labels'
 
 describe('board status display', () => {
   it('treats scheduled the same as not_started', () => {
@@ -21,5 +25,11 @@ describe('board status display', () => {
     expect(boardStatusLabel('arrival_announced')).toBe(
       boardStatusLabel('not_started'),
     )
+  })
+})
+
+describe('formatOperationalDate', () => {
+  it('formats the calendar day without shifting it by time zone', () => {
+    expect(formatOperationalDate('2026-09-24')).toBe('24.09')
   })
 })

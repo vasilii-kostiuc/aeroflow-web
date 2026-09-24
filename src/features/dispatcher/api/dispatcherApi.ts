@@ -2,7 +2,7 @@ import { apiRequest } from '@/shared/api/apiClient'
 
 import type {
   DispatcherActionType,
-  DispatcherOccurrence,
+  DispatcherBoard,
   EmergencyMode,
   EmergencyTemplate,
   FlightOccurrence,
@@ -20,22 +20,21 @@ const actionPathSegment: Record<DispatcherActionType, string> = {
   arrival: 'arrival',
 }
 
-export function getDispatcherOccurrences(
-  operationalDate?: string,
-): Promise<DispatcherOccurrence[]> {
-  const params = new URLSearchParams()
-  if (operationalDate) params.set('operationalDate', operationalDate)
-
-  const query = params.toString()
-
-  return apiRequest(
-    `/v1/dispatcher/flight-occurrences${query ? `?${query}` : ''}`,
-  )
+/**
+ * The board of the airport's current operational day (task 027): the day itself
+ * and at most one current occurrence per card, including a run started the day
+ * before and not yet finished.
+ */
+export function getDispatcherBoard(): Promise<DispatcherBoard> {
+  return apiRequest('/v1/dispatcher/board')
 }
 
+/**
+ * Ensure the card's first run of the day exists. The server decides the
+ * operational date from the airport clock, so the client sends only the card.
+ */
 export function ensureManualOccurrence(input: {
   flightDefinitionId: string
-  operationalDate: string
 }): Promise<FlightOccurrence> {
   return apiRequest('/v1/flight-occurrences:ensure-manual', {
     method: 'POST',
@@ -45,12 +44,12 @@ export function ensureManualOccurrence(input: {
 
 /**
  * Start a new manual run of the same card on the same day. The server assigns the
- * next sequence number and rejects with 409 when there is no previous run or the
- * previous run has not yet reached the final status of its lifecycle.
+ * operational date and the next sequence number, and rejects with 409 when there
+ * is no previous run or the previous run has not yet reached the final status of
+ * its lifecycle.
  */
 export function startNextManualOccurrence(input: {
   flightDefinitionId: string
-  operationalDate: string
 }): Promise<FlightOccurrence> {
   return apiRequest('/v1/flight-occurrences:start-next-manual', {
     method: 'POST',
