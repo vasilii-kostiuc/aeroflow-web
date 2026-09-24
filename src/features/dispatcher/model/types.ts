@@ -10,12 +10,14 @@ export type DispatcherActionType =
  * Every announcement type that can reach the queue screen. `check_in_continuation`
  * is not a manual dispatcher action — opening check-in starts its repeat series on
  * the server — but its job shows up in the queue like any other. `supplementary`
- * is an airport-wide announcement launched from its own modal, not the flight board.
+ * and `emergency` are airport-wide announcements launched from their own modals,
+ * not the flight board.
  */
 export type AnnouncementType =
   | DispatcherActionType
   | 'check_in_continuation'
   | 'supplementary'
+  | 'emergency'
 
 export type OccurrenceStatus =
   | 'scheduled'
@@ -105,6 +107,8 @@ export type PlaybackQueueRow = {
     | 'waiting'
     | 'playing'
     | 'rescheduled'
+    /** Cut short by an emergency announcement and requeued — it will sound again. */
+    | 'preempted'
     | 'completed'
     | 'failed'
     | 'cancelled'
@@ -118,11 +122,13 @@ export type PlaybackQueueRow = {
 }
 
 /**
- * A reusable supplementary announcement preset (task 024) — heir of the legacy САО
- * "Дополнительно" set. Carries pre-recorded/generated audio per language; the
- * dispatcher launches one by id, optionally narrowing to a subset of its languages.
+ * A reusable announcement preset the dispatcher launches by id, optionally narrowing
+ * to a subset of its languages: supplementary (task 024, heir of the legacy САО
+ * "Дополнительно" set) and emergency (task 026, heir of "Экстренные") have the same
+ * shape — a name plus pre-recorded/generated audio per language. What differs is the
+ * launch, not the preset.
  */
-export type SupplementaryTemplate = {
+export type AnnouncementPreset = {
   id: string
   name: string
   variants: { languageCode: string; audioAssetId: string }[]
@@ -130,6 +136,19 @@ export type SupplementaryTemplate = {
   active: boolean
   createdAt: string
   updatedAt: string
+}
+
+export type SupplementaryTemplate = AnnouncementPreset
+
+export type EmergencyTemplate = AnnouncementPreset
+
+/**
+ * Emergency mode as playback last reported it (task 026). While it is active the
+ * ordinary queue is suspended, and the dispatcher panel says so until it is lifted.
+ */
+export type EmergencyMode = {
+  active: boolean
+  since: string | null
 }
 
 /** Read model of the playback queue: heir of the legacy Status window. */

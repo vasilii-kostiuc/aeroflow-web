@@ -3,6 +3,8 @@ import { apiRequest } from '@/shared/api/apiClient'
 import type {
   DispatcherActionType,
   DispatcherOccurrence,
+  EmergencyMode,
+  EmergencyTemplate,
   FlightOccurrence,
   LaunchOccurrenceResult,
   LaunchPayload,
@@ -133,5 +135,44 @@ export function launchSupplementaryAnnouncement(input: {
   return apiRequest('/v1/dispatcher/supplementary-announcements', {
     method: 'POST',
     body: input,
+  })
+}
+
+/**
+ * Active emergency announcement presets (task 026) — the heir of the legacy САО
+ * "Экстренные" set.
+ */
+export function getEmergencyTemplates(): Promise<EmergencyTemplate[]> {
+  return apiRequest('/v1/dispatcher/emergency-announcements/templates')
+}
+
+/**
+ * Launch an emergency announcement from a preset (task 026). One action, two
+ * effects on the server: the announcement is queued at priority 1000 — preempting
+ * whatever is sounding — and emergency mode is activated, which suspends the
+ * ordinary queue until it is lifted.
+ */
+export function launchEmergencyAnnouncement(input: {
+  templateId: string
+  languages: string[]
+}): Promise<{ id: string }> {
+  return apiRequest('/v1/dispatcher/emergency-announcements', {
+    method: 'POST',
+    body: input,
+  })
+}
+
+/** Emergency mode as playback last reported it — the source of the panel banner. */
+export function getEmergencyMode(): Promise<EmergencyMode> {
+  return apiRequest('/v1/dispatcher/emergency-announcements/mode')
+}
+
+/**
+ * Lift emergency mode. Neutral operator action: no announcement is cancelled, the
+ * ordinary queue simply resumes. Eventual — the banner clears once playback confirms.
+ */
+export function deactivateEmergencyMode(): Promise<{ requested: boolean }> {
+  return apiRequest('/v1/dispatcher/emergency-announcements:deactivate', {
+    method: 'POST',
   })
 }

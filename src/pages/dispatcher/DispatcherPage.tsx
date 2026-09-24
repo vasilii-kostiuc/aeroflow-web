@@ -14,6 +14,7 @@ import {
 } from '@mantine/core'
 import {
   IconAlertCircle,
+  IconAlertTriangle,
   IconPlaylist,
   IconSpeakerphone,
 } from '@tabler/icons-react'
@@ -29,6 +30,8 @@ import { useDispatcherBoard } from '@/features/dispatcher/hooks/useDispatcherBoa
 import { DispatcherActionFilter } from '@/features/dispatcher/ui/DispatcherActionFilter'
 import { DispatcherFlightList } from '@/features/dispatcher/ui/DispatcherFlightList'
 import { DispatcherLaunchPanel } from '@/features/dispatcher/ui/DispatcherLaunchPanel'
+import { EmergencyAnnouncementModal } from '@/features/dispatcher/ui/EmergencyAnnouncementModal'
+import { EmergencyModeBanner } from '@/features/dispatcher/ui/EmergencyModeBanner'
 import { PlaybackQueueDrawer } from '@/features/dispatcher/ui/PlaybackQueueDrawer'
 import { SupplementaryAnnouncementModal } from '@/features/dispatcher/ui/SupplementaryAnnouncementModal'
 
@@ -42,6 +45,7 @@ export function DispatcherPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [statusOpened, setStatusOpened] = useState(false)
   const [supplementaryOpened, setSupplementaryOpened] = useState(false)
+  const [emergencyOpened, setEmergencyOpened] = useState(false)
 
   const board = useDispatcherBoard(operationalDate)
   const airportsQuery = useAirports({ page: 1, limit: 100 })
@@ -95,6 +99,13 @@ export function DispatcherPage() {
             Дополнительное объявление
           </Button>
           <Button
+            color="red"
+            leftSection={<IconAlertTriangle size={16} />}
+            onClick={() => setEmergencyOpened(true)}
+          >
+            Экстренное объявление
+          </Button>
+          <Button
             variant="default"
             leftSection={<IconPlaylist size={16} />}
             onClick={() => setStatusOpened(true)}
@@ -103,6 +114,8 @@ export function DispatcherPage() {
           </Button>
         </Group>
       </Group>
+
+      <EmergencyModeBanner />
 
       <DispatcherActionFilter value={action} onChange={setAction} />
 
@@ -142,6 +155,10 @@ export function DispatcherPage() {
       <SupplementaryAnnouncementModal
         opened={supplementaryOpened}
         onClose={() => setSupplementaryOpened(false)}
+      />
+      <EmergencyAnnouncementModal
+        opened={emergencyOpened}
+        onClose={() => setEmergencyOpened(false)}
       />
       <PlaybackQueueDrawer
         opened={statusOpened}
