@@ -13,7 +13,6 @@ import {
   Table,
   Text,
   TextInput,
-  Title,
 } from '@mantine/core'
 import { IconDotsVertical, IconEdit, IconPlus } from '@tabler/icons-react'
 
@@ -21,6 +20,7 @@ import { useAirports, useChangeAirportStatus } from '@/features/airports/hooks/u
 import type { Airport } from '@/features/airports/model/types'
 import { AirportForm } from '@/features/airports/ui/AirportForm'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
+import { PageHeader } from '@/shared/ui/PageHeader'
 
 export function AirportsPage() {
   const [search, setSearch] = useState('')
@@ -31,15 +31,17 @@ export function AirportsPage() {
 
   return (
     <Stack gap="lg">
-      <Group justify="space-between">
-        <div>
-          <Title order={1}>Аэропорты</Title>
-          <Text c="dimmed">Административный справочник аэропортов и городов.</Text>
-        </div>
-        <Button leftSection={<IconPlus size={18} />} onClick={() => setEditing(null)}>Добавить аэропорт</Button>
-      </Group>
+      <PageHeader
+        title="Аэропорты"
+        description="Аэропорты и города, из которых складываются маршруты рейсов."
+        actions={
+          <Button leftSection={<IconPlus size={18} />} onClick={() => setEditing(null)}>
+            Добавить аэропорт
+          </Button>
+        }
+      />
 
-      <Paper withBorder radius="lg" p="lg">
+      <Paper withBorder p="lg">
         <Stack>
           <Group grow align="flex-end">
             <TextInput label="Поиск" placeholder="Код, город или аэропорт" value={search} onChange={(e) => setSearch(e.currentTarget.value)} />
@@ -54,7 +56,7 @@ export function AirportsPage() {
           </Group>
 
           {airports.isPending && <Loader aria-label="Загрузка аэропортов" />}
-          {airports.isError && <Alert color="red">Не удалось загрузить справочник аэропортов.</Alert>}
+          {airports.isError && <Alert color="danger">Не удалось загрузить справочник аэропортов.</Alert>}
           {airports.data?.items.length === 0 && <Text c="dimmed">Аэропорты не найдены.</Text>}
           {airports.data && airports.data.items.length > 0 && (
             <Table.ScrollContainer minWidth={700}>
@@ -74,7 +76,7 @@ export function AirportsPage() {
                           <Menu.Dropdown>
                             <Menu.Item leftSection={<IconEdit size={16} />} onClick={() => setEditing(airport)}>Редактировать</Menu.Item>
                             <Menu.Item
-                              color={airport.active ? 'red' : 'green'}
+                              color={airport.active ? 'danger' : 'success'}
                               onClick={() => status.mutate({ id: airport.id, active: !airport.active })}
                             >
                               {airport.active ? 'Деактивировать' : 'Активировать'}

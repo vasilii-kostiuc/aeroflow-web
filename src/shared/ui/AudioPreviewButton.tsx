@@ -68,7 +68,7 @@ export function AudioPreviewButton({ audioAssetId, label = 'Прослушать
     <Tooltip label={playing ? 'Остановить' : label}>
       <ActionIcon
         variant="light"
-        color={playing ? 'red' : 'blue'}
+        color={playing ? 'danger' : 'blue'}
         aria-label={playing ? 'Остановить' : label}
         loading={loading}
         disabled={!audioAssetId}

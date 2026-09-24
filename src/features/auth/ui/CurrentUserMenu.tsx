@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Text } from '@mantine/core'
+import { Button, Group, Text } from '@mantine/core'
 import { IconLogout } from '@tabler/icons-react'
 
 import { useLogout } from '@/features/auth/hooks/useLogout'
@@ -14,14 +14,9 @@ export function CurrentUserMenu() {
 
   return (
     <Group gap="sm" wrap="nowrap">
-      <Stack gap={0} align="flex-end" visibleFrom="sm">
-        <Text size="sm" fw={600}>
-          {user.email}
-        </Text>
-        <Text size="xs" c="dimmed">
-          Авторизован
-        </Text>
-      </Stack>
+      <Text size="sm" c="dimmed" visibleFrom="sm">
+        {user.email}
+      </Text>
       <Button
         variant="subtle"
         color="gray"

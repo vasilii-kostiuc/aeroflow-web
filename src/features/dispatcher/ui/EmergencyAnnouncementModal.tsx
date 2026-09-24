@@ -25,7 +25,7 @@ export function EmergencyAnnouncementModal({ opened, onClose }: Props) {
       onClose={onClose}
       title="Экстренное объявление"
       submitLabel="Запустить экстренное"
-      submitColor="red"
+      submitColor="danger"
       notice="Экстренное объявление прервёт звучащее и остановит обычную очередь, пока режим не будет снят."
       emptyHint="Нет настроенных экстренных объявлений. Добавьте их в разделе администрирования."
       presets={templatesQuery.data ?? []}

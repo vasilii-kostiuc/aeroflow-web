@@ -1,4 +1,6 @@
-import { AppShell, Burger, Group, NavLink, Text, Title } from '@mantine/core'
+import type { ReactNode } from 'react'
+
+import { AppShell, Burger, Group, NavLink, Stack, Text, ThemeIcon } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import {
   IconAlertTriangle,
@@ -12,14 +14,29 @@ import { NavLink as RouterNavLink, Outlet } from 'react-router'
 import { paths } from '@/app/router/paths'
 import { CurrentUserMenu } from '@/features/auth/ui/CurrentUserMenu'
 
+function NavSection({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="sm" mb={4}>
+        {label}
+      </Text>
+      {children}
+    </div>
+  )
+}
+
 export function AppLayout() {
   const [opened, { toggle, close }] = useDisclosure()
 
+  const link = (to: string, label: string, icon: ReactNode) => (
+    <NavLink component={RouterNavLink} to={to} label={label} leftSection={icon} onClick={close} />
+  )
+
   return (
     <AppShell
-      header={{ height: 64 }}
+      header={{ height: 56 }}
       navbar={{
-        width: 280,
+        width: 260,
         breakpoint: 'sm',
         collapsed: { mobile: !opened },
       }}
@@ -27,7 +44,7 @@ export function AppLayout() {
     >
       <AppShell.Header px="lg">
         <Group h="100%" justify="space-between" wrap="nowrap">
-          <Group wrap="nowrap">
+          <Group gap="sm" wrap="nowrap">
             <Burger
               opened={opened}
               onClick={toggle}
@@ -35,53 +52,37 @@ export function AppLayout() {
               size="sm"
               aria-label="Открыть навигацию"
             />
-            <div>
-              <Title order={3}>AeroFlow</Title>
-              <Text size="xs" c="dimmed">
-                Airport announcements
-              </Text>
-            </div>
+            <ThemeIcon size={30} radius="md" variant="filled" aria-hidden>
+              <IconBroadcast size={18} />
+            </ThemeIcon>
+            <Text fw={700} size="lg">
+              AeroFlow
+            </Text>
           </Group>
           <CurrentUserMenu />
         </Group>
       </AppShell.Header>
 
       <AppShell.Navbar p="md">
-        <NavLink
-          component={RouterNavLink}
-          to={paths.flightDefinitions}
-          label="Карточки рейсов"
-          leftSection={<IconPlaneDeparture size={18} />}
-          onClick={close}
-        />
-        <NavLink
-          component={RouterNavLink}
-          to={paths.airports}
-          label="Аэропорты"
-          leftSection={<IconBuildingAirport size={18} />}
-          onClick={close}
-        />
-        <NavLink
-          component={RouterNavLink}
-          to={paths.supplementaryTemplates}
-          label="Дополнительные объявления"
-          leftSection={<IconSpeakerphone size={18} />}
-          onClick={close}
-        />
-        <NavLink
-          component={RouterNavLink}
-          to={paths.emergencyTemplates}
-          label="Экстренные объявления"
-          leftSection={<IconAlertTriangle size={18} />}
-          onClick={close}
-        />
-        <NavLink
-          component={RouterNavLink}
-          to={paths.dispatcher}
-          label="Панель диспетчера"
-          leftSection={<IconBroadcast size={18} />}
-          onClick={close}
-        />
+        <Stack gap="lg">
+          <NavSection label="Работа">
+            {link(paths.dispatcher, 'Панель диспетчера', <IconBroadcast size={18} />)}
+          </NavSection>
+          <NavSection label="Справочники">
+            {link(paths.flightDefinitions, 'Карточки рейсов', <IconPlaneDeparture size={18} />)}
+            {link(paths.airports, 'Аэропорты', <IconBuildingAirport size={18} />)}
+            {link(
+              paths.supplementaryTemplates,
+              'Дополнительные объявления',
+              <IconSpeakerphone size={18} />,
+            )}
+            {link(
+              paths.emergencyTemplates,
+              'Экстренные объявления',
+              <IconAlertTriangle size={18} />,
+            )}
+          </NavSection>
+        </Stack>
       </AppShell.Navbar>
 
       <AppShell.Main>

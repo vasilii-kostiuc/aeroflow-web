@@ -77,13 +77,13 @@ export function DispatcherFlightList({
               </div>
               <Group gap="xs" wrap="nowrap">
                 {isCarriedOver(flight, operationalDate) && flight.occurrenceDate ? (
-                  <Badge variant="outline" color="orange">
+                  <Badge variant="outline" color="warning">
                     с {formatOperationalDate(flight.occurrenceDate)}
                   </Badge>
                 ) : null}
                 <Badge
                   variant="light"
-                  color={isBoardStarted(flight.status) ? 'blue' : 'gray'}
+                  color={isBoardStarted(flight.status) ? 'info' : 'gray'}
                 >
                   {boardStatusLabel(flight.status)}
                 </Badge>

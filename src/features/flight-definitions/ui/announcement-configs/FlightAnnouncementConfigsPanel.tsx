@@ -30,9 +30,9 @@ function TabStatus({ config }: { config?: FlightAnnouncementConfig }) {
   if (!config.enabled) return <Badge size="xs" color="gray" variant="light">выключено</Badge>
 
   return config.isValidForDispatcher ? (
-    <Badge size="xs" color="teal" variant="light">готово</Badge>
+    <Badge size="xs" color="success" variant="light">готово</Badge>
   ) : (
-    <Badge size="xs" color="yellow" variant="light">настроить</Badge>
+    <Badge size="xs" color="warning" variant="light">настроить</Badge>
   )
 }
 
@@ -94,7 +94,7 @@ export function FlightAnnouncementConfigsPanel({ flightDefinition }: Props) {
       </Stack>
 
       {error ? (
-        <Alert color="red" icon={<IconAlertCircle size={16} />}>
+        <Alert color="danger" icon={<IconAlertCircle size={16} />}>
           {error}
         </Alert>
       ) : null}

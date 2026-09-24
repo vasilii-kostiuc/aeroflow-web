@@ -72,7 +72,7 @@ export function LoginForm() {
       <Stack>
         {generalError && (
           <Alert
-            color="red"
+            color="danger"
             icon={<IconAlertCircle size={18} />}
             title="Не удалось войти"
           >

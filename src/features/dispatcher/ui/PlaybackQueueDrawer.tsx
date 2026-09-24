@@ -20,14 +20,14 @@ import { useStopAnnouncementPlayback } from '../hooks/useStopAnnouncementPlaybac
 import { usePlaybackQueue } from '../hooks/usePlaybackQueue'
 
 const stateColors: Record<PlaybackQueueRow['state'], string> = {
-  playing: 'green',
-  waiting: 'blue',
-  rescheduled: 'blue',
-  preempted: 'red',
+  playing: 'success',
+  waiting: 'info',
+  rescheduled: 'info',
+  preempted: 'danger',
   completed: 'gray',
-  failed: 'red',
+  failed: 'danger',
   cancelled: 'gray',
-  interrupted: 'orange',
+  interrupted: 'warning',
 }
 
 const stateLabels: Record<PlaybackQueueRow['state'], string> = {
@@ -89,7 +89,7 @@ function QueueRow({
             .join(' · ')}
         </Text>
         {row.failureReason ? (
-          <Text size="xs" c="red">
+          <Text size="xs" c="danger">
             {row.failureReason}
           </Text>
         ) : null}
@@ -111,7 +111,7 @@ function QueueRow({
           <Button
             size="compact-xs"
             variant="subtle"
-            color="red"
+            color="danger"
             loading={cancelling}
             onClick={() => onCancel(row)}
           >
@@ -119,7 +119,7 @@ function QueueRow({
           </Button>
         ) : null}
         {onStop && !resting ? (
-          <Button size="compact-xs" variant="subtle" color="red" loading={cancelling} onClick={() => onStop(row)}>
+          <Button size="compact-xs" variant="subtle" color="danger" loading={cancelling} onClick={() => onStop(row)}>
             Стоп
           </Button>
         ) : null}
@@ -198,7 +198,7 @@ export function PlaybackQueueDrawer({
         </Text>
       ),
       labels: { confirm: 'Убрать', cancel: 'Отмена' },
-      confirmProps: { color: 'red' },
+      confirmProps: { color: 'danger' },
       onConfirm: () => cancelMutation.mutate(row.announcementId),
     })
   }
@@ -208,7 +208,7 @@ export function PlaybackQueueDrawer({
       title: 'Остановить текущее объявление?',
       children: <Text size="sm">Звучащее объявление будет прервано. Рейс и объявление не отменяются.</Text>,
       labels: { confirm: 'Стоп', cancel: 'Отмена' },
-      confirmProps: { color: 'red' },
+      confirmProps: { color: 'danger' },
       onConfirm: () => stopMutation.mutate(row.announcementId),
     })
   }
@@ -216,12 +216,12 @@ export function PlaybackQueueDrawer({
   return (
     <Drawer opened={opened} onClose={onClose} title="Статус очереди" position="right">
       {queue.isError ? (
-        <Alert color="yellow" icon={<IconAlertCircle size={16} />}>
+        <Alert color="warning" icon={<IconAlertCircle size={16} />}>
           Не удалось обновить очередь — данные могут быть неактуальны.
         </Alert>
       ) : null}
       {cancelMutation.isError ? (
-        <Alert color="red" icon={<IconAlertCircle size={16} />}>
+        <Alert color="danger" icon={<IconAlertCircle size={16} />}>
           Не удалось убрать объявление — повторите попытку.
         </Alert>
       ) : null}

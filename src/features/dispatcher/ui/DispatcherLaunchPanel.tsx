@@ -171,7 +171,7 @@ export function DispatcherLaunchPanel({
 
         {launch.isError && (
           <Alert
-            color="red"
+            color="danger"
             icon={<IconAlertCircle size={16} />}
             title="Объявление не запущено"
           >
@@ -181,7 +181,7 @@ export function DispatcherLaunchPanel({
 
         {launch.isSuccess && (
           <Alert
-            color="green"
+            color="success"
             icon={<IconCircleCheck size={16} />}
             title="Объявление создано"
           >
