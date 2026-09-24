@@ -272,7 +272,7 @@ export function segmentSummary(
   if (segment.type === 'audio_asset') {
     const asset = audioAssets.find((item) => item.id === segment.audioAssetId)
     return asset
-      ? `${asset.name} · ${asset.languageCode}`
+      ? `${asset.title} · ${asset.languageCode}`
       : segment.audioAssetId || 'Аудиофайл не выбран'
   }
 

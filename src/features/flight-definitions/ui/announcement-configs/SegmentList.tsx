@@ -178,7 +178,6 @@ export function SegmentList({
           announcementType={announcementType}
           languageCode={languageCode}
           segment={modal.segment}
-          audioAssets={audioAssets}
           onClose={() => setModal(null)}
           onSubmit={saveSegment}
         />

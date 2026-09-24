@@ -16,25 +16,20 @@ import {
 import { useForm } from '@mantine/form'
 import { IconMicrophone, IconPlus, IconTrash } from '@tabler/icons-react'
 
+import { useGenerateAudioAsset } from '@/features/audio-assets/hooks/useAudioAssets'
+import { AudioAssetPicker } from '@/features/audio-assets/ui/AudioAssetPicker'
 import { useLanguages } from '@/features/languages/hooks/useLanguages'
 import { ApiClientError } from '@/shared/api/apiClient'
-import { AudioPreviewButton } from '@/shared/ui/AudioPreviewButton'
 
-import type {
-  AnnouncementPreset,
-  AnnouncementPresetInput,
-  AudioAsset,
-  AudioAssetsQuery,
-  GenerateAudioAssetMutation,
-} from '../model/types'
+import type { AnnouncementPreset, AnnouncementPresetInput } from '../model/types'
 
 type Props = {
   preset: AnnouncementPreset | null
   onClose: () => void
   title: string
   namePlaceholder: string
-  assets: AudioAssetsQuery
-  generate: GenerateAudioAssetMutation
+  /** Place of choice for the audio picker, e.g. `preset:emergency`. */
+  placeKey: string
   submit: (input: AnnouncementPresetInput) => Promise<unknown>
   pending: boolean
 }
@@ -44,30 +39,27 @@ type FormValues = { name: string; variants: FormVariant[] }
 
 /**
  * Editor of an announcement preset: a name plus one row per language, each pointing
- * at an audio asset that is either picked from the uploaded/generated catalog or
+ * at an audio asset that is either picked from the audio library (task 031) or
  * voiced on the spot through TTS (task 021).
  *
- * Purely presentational and shared by the supplementary (024) and emergency (026)
- * catalogs — the owning feature passes in its own queries and mutation, so this
- * component never knows which catalog it edits.
+ * Shared by the supplementary (024) and emergency (026) catalogs — the owning
+ * feature passes in its own save mutation, so this component never knows which
+ * catalog it edits.
  */
 export function AnnouncementPresetForm({
   preset,
   onClose,
   title,
   namePlaceholder,
-  assets,
-  generate,
+  placeKey,
   submit,
   pending,
 }: Props) {
   const languagesQuery = useLanguages()
+  const generate = useGenerateAudioAsset()
   const [error, setError] = useState<string | null>(null)
   // Index of the variant currently being voiced, to scope the button spinner.
   const [generatingIndex, setGeneratingIndex] = useState<number | null>(null)
-  // Freshly generated assets, kept locally so the picker shows them immediately
-  // (before the assets query refetch lands).
-  const [generatedAssets, setGeneratedAssets] = useState<AudioAsset[]>([])
 
   const form = useForm<FormValues>({
     initialValues: preset
@@ -90,16 +82,6 @@ export function AnnouncementPresetForm({
     label: `${language.name} (${language.code})`,
   }))
 
-  const assetOptions = [...(assets.data ?? []), ...generatedAssets]
-    .filter((asset) => asset.active)
-    .filter(
-      (asset, index, all) => all.findIndex((other) => other.id === asset.id) === index,
-    )
-    .map((asset) => ({
-      value: asset.id,
-      label: `${asset.name} (${asset.languageCode})`,
-    }))
-
   async function voice(index: number) {
     const variant = form.values.variants[index]
     if (!variant.languageCode) {
@@ -117,11 +99,6 @@ export function AnnouncementPresetForm({
         text,
         languageCode: variant.languageCode,
       })
-      setGeneratedAssets((current) =>
-        current.some((existing) => existing.id === asset.id)
-          ? current
-          : [...current, asset],
-      )
       form.setFieldValue(`variants.${index}.audioAssetId`, asset.id)
     } catch (caught) {
       setError(
@@ -203,19 +180,6 @@ export function AnnouncementPresetForm({
                         style={{ flex: 1 }}
                         {...form.getInputProps(`variants.${index}.languageCode`)}
                       />
-                      <Select
-                        aria-label={`Аудио варианта ${index + 1}`}
-                        placeholder="Аудиофайл"
-                        data={assetOptions}
-                        disabled={assets.isLoading}
-                        style={{ flex: 2 }}
-                        {...form.getInputProps(`variants.${index}.audioAssetId`)}
-                      />
-                      <div style={{ marginTop: 4 }}>
-                        <AudioPreviewButton
-                          audioAssetId={form.values.variants[index].audioAssetId}
-                        />
-                      </div>
                       <ActionIcon
                         variant="subtle"
                         color="danger"
@@ -227,6 +191,17 @@ export function AnnouncementPresetForm({
                         <IconTrash size={18} />
                       </ActionIcon>
                     </Group>
+                    <AudioAssetPicker
+                      label={`Аудио варианта ${index + 1}`}
+                      hideLabel
+                      value={form.values.variants[index].audioAssetId || null}
+                      onChange={(audioAssetId) =>
+                        form.setFieldValue(`variants.${index}.audioAssetId`, audioAssetId)
+                      }
+                      languageCode={form.values.variants[index].languageCode}
+                      placeKey={placeKey}
+                      error={form.errors[`variants.${index}.audioAssetId`]}
+                    />
                     <Group align="flex-end" wrap="nowrap" gap="xs">
                       <Textarea
                         aria-label={`Текст для озвучивания варианта ${index + 1}`}

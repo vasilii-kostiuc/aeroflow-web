@@ -16,12 +16,12 @@ import {
 import { modals } from '@mantine/modals'
 import { IconAlertCircle, IconPlus } from '@tabler/icons-react'
 
+import { useAudioAssets } from '@/features/audio-assets/hooks/useAudioAssets'
 import { useLanguages } from '@/features/languages/hooks/useLanguages'
 import { ApiClientError } from '@/shared/api/apiClient'
 
 import {
   useAddAnnouncementVariant,
-  useAudioAssets,
   useDeleteAnnouncementVariant,
   useUpdateAnnouncementVariant,
   useUpdateFlightAnnouncementConfig,

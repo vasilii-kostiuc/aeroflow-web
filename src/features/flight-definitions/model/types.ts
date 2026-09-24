@@ -80,14 +80,7 @@ export type FlightAnnouncementConfig = {
   updatedAt: string
 }
 
-export type AudioAsset = {
-  id: string
-  name: string
-  languageCode: string
-  active: boolean
-  mimeType: string | null
-  sizeBytes: number | null
-}
+export type { AudioAsset } from '@/features/audio-assets/model/types'
 
 export type FlightAnnouncementConfigInput = {
   announcementType: FlightAnnouncementType

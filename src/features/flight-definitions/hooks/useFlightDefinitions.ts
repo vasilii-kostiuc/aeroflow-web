@@ -8,11 +8,9 @@ import {
   deleteAnnouncementVariant,
   deactivateFlightDefinition,
   getFlightAnnouncementConfigs,
-  getAudioAssets,
   getFlightDefinition,
   updateAnnouncementVariant,
   updateFlightAnnouncementConfig,
-  uploadAudioAsset,
   getFlightDefinitions,
   updateFlightDefinition,
 } from '../api/flightDefinitionApi'
@@ -110,31 +108,6 @@ export function useFlightAnnouncementConfigs(flightDefinitionId?: string) {
       : flightDefinitionKeys.announcementConfigs(''),
     queryFn: () => getFlightAnnouncementConfigs(flightDefinitionId ?? ''),
     enabled: Boolean(flightDefinitionId),
-  })
-}
-
-export function useAudioAssets() {
-  return useQuery({
-    queryKey: flightDefinitionKeys.audioAssets,
-    queryFn: getAudioAssets,
-  })
-}
-
-export function useUploadAudioAsset() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({
-      file,
-      languageCode,
-    }: {
-      file: File
-      languageCode: string
-    }) => uploadAudioAsset(file, languageCode),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
-        queryKey: flightDefinitionKeys.audioAssets,
-      }),
   })
 }
 

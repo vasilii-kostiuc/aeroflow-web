@@ -12,17 +12,32 @@ type Props = {
 }
 
 /**
+ * The preview currently holding the speakers. Only one preview plays at a time
+ * across the whole app (task 031: a library table has a play button per row), so
+ * starting one stops the previous.
+ */
+let active: { owner: object; stop: () => void } | null = null
+
+/**
  * Play an audio asset in the browser. Fetches the file with auth (as a Blob) on
  * first play, then toggles play/stop. The object URL and Audio element are cleaned
- * up on stop, when the asset changes, and on unmount.
+ * up on stop, when the asset changes, when another preview starts, and on unmount.
  */
 export function AudioPreviewButton({ audioAssetId, label = 'Прослушать' }: Props) {
   const [playing, setPlaying] = useState(false)
   const [loading, setLoading] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const urlRef = useRef<string | null>(null)
+  const ownerRef = useRef({})
+  // Bumped on every stop, so a fetch that lands after its preview was stopped
+  // (e.g. another preview started meanwhile) does not start playing.
+  const generationRef = useRef(0)
 
   function cleanup() {
+    generationRef.current += 1
+    if (active?.owner === ownerRef.current) {
+      active = null
+    }
     if (audioRef.current) {
       audioRef.current.pause()
       audioRef.current.src = ''
@@ -47,9 +62,17 @@ export function AudioPreviewButton({ audioAssetId, label = 'Прослушать
     }
     if (!audioAssetId) return
 
+    active?.stop()
+    active = { owner: ownerRef.current, stop: cleanup }
+    const generation = generationRef.current
     setLoading(true)
     try {
       const url = await fetchAudioAssetObjectUrl(audioAssetId)
+      if (generation !== generationRef.current) {
+        URL.revokeObjectURL(url)
+
+        return
+      }
       urlRef.current = url
       const audio = new Audio(url)
       audioRef.current = audio

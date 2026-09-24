@@ -1,22 +1,9 @@
 import { useState } from 'react'
 
-import {
-  Alert,
-  Button,
-  FileInput,
-  Group,
-  Modal,
-  NumberInput,
-  Select,
-  Stack,
-  Textarea,
-} from '@mantine/core'
-import { IconUpload } from '@tabler/icons-react'
+import { Button, Group, Modal, NumberInput, Select, Stack, Textarea } from '@mantine/core'
 
-import { ApiClientError } from '@/shared/api/apiClient'
-import { AudioPreviewButton } from '@/shared/ui/AudioPreviewButton'
+import { AudioAssetPicker } from '@/features/audio-assets/ui/AudioAssetPicker'
 
-import { useUploadAudioAsset } from '../../hooks/useFlightDefinitions'
 import {
   availableSlots,
   canSaveSegment,
@@ -27,7 +14,6 @@ import {
 import type {
   AnnouncementTemplateSegmentInput,
   AnnouncementTemplateSegmentType,
-  AudioAsset,
   DynamicSlotType,
   FlightAnnouncementType,
 } from '../../model/types'
@@ -37,7 +23,6 @@ export function SegmentModal({
   announcementType,
   languageCode,
   segment,
-  audioAssets,
   onClose,
   onSubmit,
 }: {
@@ -45,7 +30,6 @@ export function SegmentModal({
   announcementType: FlightAnnouncementType
   languageCode: string
   segment: AnnouncementTemplateSegmentInput
-  audioAssets: AudioAsset[]
   onClose: () => void
   onSubmit: (segment: AnnouncementTemplateSegmentInput) => void
 }) {
@@ -70,35 +54,15 @@ export function SegmentModal({
         />
 
         {draft.type === 'audio_asset' && (
-          <Stack gap="xs">
-            <Group align="flex-end" wrap="nowrap" gap="xs">
-              <Select
-                label="Аудиофайл"
-                placeholder="Выберите файл"
-                searchable
-                style={{ flex: 1 }}
-                data={audioAssets.map((asset) => ({
-                  value: asset.id,
-                  label:
-                    asset.languageCode === languageCode
-                      ? `${asset.name} · ${asset.languageCode}`
-                      : `${asset.name} · ${asset.languageCode} · другой язык`,
-                  disabled: !asset.active,
-                }))}
-                value={draft.audioAssetId}
-                onChange={(value) =>
-                  setDraft((current) => ({ ...current, audioAssetId: value }))
-                }
-              />
-              <AudioPreviewButton audioAssetId={draft.audioAssetId} />
-            </Group>
-            <AudioAssetUploader
-              languageCode={languageCode}
-              onUploaded={(audioAssetId) =>
-                setDraft((current) => ({ ...current, audioAssetId }))
-              }
-            />
-          </Stack>
+          <AudioAssetPicker
+            label="Аудиофайл"
+            value={draft.audioAssetId}
+            onChange={(audioAssetId) =>
+              setDraft((current) => ({ ...current, audioAssetId }))
+            }
+            languageCode={languageCode}
+            placeKey={`segment:${announcementType}`}
+          />
         )}
 
         {draft.type === 'dynamic_slot' && (
@@ -155,63 +119,5 @@ export function SegmentModal({
         </Group>
       </Stack>
     </Modal>
-  )
-}
-
-function AudioAssetUploader({
-  languageCode,
-  onUploaded,
-}: {
-  languageCode: string
-  onUploaded: (audioAssetId: string) => void
-}) {
-  const uploadMutation = useUploadAudioAsset()
-  const [file, setFile] = useState<File | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  async function upload() {
-    if (!file || !languageCode.trim()) return
-
-    setError(null)
-    try {
-      const asset = await uploadMutation.mutateAsync({
-        file,
-        languageCode: languageCode.trim(),
-      })
-      onUploaded(asset.id)
-      setFile(null)
-    } catch (uploadError) {
-      setError(
-        uploadError instanceof ApiClientError
-          ? uploadError.message
-          : 'Не удалось загрузить аудиофайл.',
-      )
-    }
-  }
-
-  return (
-    <Stack gap="xs">
-      <Group align="flex-end">
-        <FileInput
-          flex={1}
-          label="Загрузить новый аудиофайл"
-          description="WAV, MP3 или OGG, не более 50 МБ"
-          accept="audio/wav,audio/x-wav,audio/mpeg,audio/ogg,.wav,.mp3,.ogg"
-          clearable
-          value={file}
-          onChange={setFile}
-        />
-        <Button
-          variant="light"
-          leftSection={<IconUpload size={16} />}
-          loading={uploadMutation.isPending}
-          disabled={!file || !languageCode.trim()}
-          onClick={() => void upload()}
-        >
-          Загрузить
-        </Button>
-      </Group>
-      {error && <Alert color="danger">{error}</Alert>}
-    </Stack>
   )
 }

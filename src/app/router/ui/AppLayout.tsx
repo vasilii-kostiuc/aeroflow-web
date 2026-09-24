@@ -6,6 +6,7 @@ import {
   IconAlertTriangle,
   IconBroadcast,
   IconBuildingAirport,
+  IconMusic,
   IconPlaneDeparture,
   IconSpeakerphone,
 } from '@tabler/icons-react'
@@ -81,6 +82,7 @@ export function AppLayout() {
               'Экстренные объявления',
               <IconAlertTriangle size={18} />,
             )}
+            {link(paths.audioAssets, 'Аудиобиблиотека', <IconMusic size={18} />)}
           </NavSection>
         </Stack>
       </AppShell.Navbar>

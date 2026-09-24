@@ -24,21 +24,3 @@ export type AnnouncementPresetInput = {
   name: string
   variants: AnnouncementPresetVariant[]
 }
-
-/** Active audio asset available to voice a preset variant. */
-export type AudioAsset = {
-  id: string
-  name: string
-  languageCode: string
-  active: boolean
-}
-
-/** The slices of a TanStack query/mutation the preset screens actually use. */
-export type AudioAssetsQuery = {
-  data?: AudioAsset[]
-  isLoading: boolean
-}
-
-export type GenerateAudioAssetMutation = {
-  mutateAsync: (input: { text: string; languageCode: string }) => Promise<AudioAsset>
-}

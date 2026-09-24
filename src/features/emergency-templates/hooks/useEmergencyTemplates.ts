@@ -1,11 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
-  useAudioAssets,
-  useGenerateAudioAsset,
-} from '@/features/announcement-presets/hooks/useAudioAssets'
-
-import {
   changeEmergencyTemplateStatus,
   createEmergencyTemplate,
   getEmergencyTemplates,
@@ -58,7 +53,3 @@ export function useChangeEmergencyTemplateStatus() {
     onSuccess: invalidate,
   })
 }
-
-// The audio catalog is the same for every preset kind, so its queries live with the
-// shared preset code and are re-exported here for this feature's own screens.
-export { useAudioAssets, useGenerateAudioAsset }

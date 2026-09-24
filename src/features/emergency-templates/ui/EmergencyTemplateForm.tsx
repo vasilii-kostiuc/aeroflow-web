@@ -2,9 +2,7 @@ import type { AnnouncementPresetInput } from '@/features/announcement-presets/mo
 import { AnnouncementPresetForm } from '@/features/announcement-presets/ui/AnnouncementPresetForm'
 
 import {
-  useAudioAssets,
   useCreateEmergencyTemplate,
-  useGenerateAudioAsset,
   useUpdateEmergencyTemplate,
 } from '../hooks/useEmergencyTemplates'
 import type { EmergencyTemplate } from '../model/types'
@@ -21,8 +19,6 @@ type Props = {
 export function EmergencyTemplateForm({ template, onClose }: Props) {
   const create = useCreateEmergencyTemplate()
   const update = useUpdateEmergencyTemplate()
-  const generate = useGenerateAudioAsset()
-  const assets = useAudioAssets()
 
   const submit = (input: AnnouncementPresetInput) =>
     template ? update.mutateAsync({ id: template.id, input }) : create.mutateAsync(input)
@@ -33,8 +29,7 @@ export function EmergencyTemplateForm({ template, onClose }: Props) {
       onClose={onClose}
       title={template ? 'Редактировать объявление' : 'Новое экстренное объявление'}
       namePlaceholder="Например, Пожарная тревога"
-      assets={assets}
-      generate={generate}
+      placeKey="preset:emergency"
       submit={submit}
       pending={template ? update.isPending : create.isPending}
     />
