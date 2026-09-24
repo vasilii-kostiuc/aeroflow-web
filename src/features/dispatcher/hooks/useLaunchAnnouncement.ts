@@ -17,7 +17,6 @@ import type {
 export type LaunchVariables = {
   flight: BoardFlight
   action: DispatcherActionType
-  operationalDate: string
   payload: LaunchPayload
 }
 
@@ -26,18 +25,16 @@ export type LaunchVariables = {
  *
  * - a finished card (previous run reached its final status) starts a new run, so
  *   the action runs on a fresh occurrence rather than the old, finished one;
- * - otherwise ensure today's occurrence exists (idempotent for the first run) and
- *   reuse the one already on the board.
+ * - otherwise reuse the occurrence already on the board (possibly a run carried
+ *   over from the previous day), or ensure today's first run exists.
+ *
+ * The server decides the operational date of a new run (task 027).
  */
-async function resolveOccurrenceId(
-  flight: BoardFlight,
-  operationalDate: string,
-): Promise<string> {
+async function resolveOccurrenceId(flight: BoardFlight): Promise<string> {
   if (hasFinishedRun(flight)) {
     return (
       await startNextManualOccurrence({
         flightDefinitionId: flight.flightDefinitionId,
-        operationalDate,
       })
     ).id
   }
@@ -47,7 +44,6 @@ async function resolveOccurrenceId(
     (
       await ensureManualOccurrence({
         flightDefinitionId: flight.flightDefinitionId,
-        operationalDate,
       })
     ).id
   )
@@ -63,15 +59,13 @@ export function useLaunchAnnouncement() {
   const queryClient = useQueryClient()
 
   return useMutation<LaunchOccurrenceResult, Error, LaunchVariables>({
-    mutationFn: async ({ flight, action, operationalDate, payload }) => {
-      const occurrenceId = await resolveOccurrenceId(flight, operationalDate)
+    mutationFn: async ({ flight, action, payload }) => {
+      const occurrenceId = await resolveOccurrenceId(flight)
 
       return launchOccurrenceAnnouncement(occurrenceId, action, payload)
     },
-    onSuccess: (_result, { operationalDate }) => {
-      void queryClient.invalidateQueries({
-        queryKey: dispatcherKeys.occurrences(operationalDate),
-      })
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: dispatcherKeys.board })
     },
   })
 }

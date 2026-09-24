@@ -71,6 +71,7 @@ function flight(overrides: Partial<BoardFlight> = {}): BoardFlight {
     originAirportCode: 'RMO',
     destinationAirportCode: 'IST',
     occurrenceId: 'occurrence-1',
+    occurrenceDate: '2026-06-26',
     status: 'not_started',
     ...overrides,
   }
@@ -124,7 +125,6 @@ function renderPanel(
       <DispatcherLaunchPanel
         action="check_in_opening"
         flight={flight()}
-        operationalDate="2026-06-26"
         resolveAirportLabel={(code) => code}
         {...props}
       />
@@ -158,7 +158,6 @@ describe('DispatcherLaunchPanel', () => {
     expect(mutate).toHaveBeenCalledWith({
       flight: expect.objectContaining({ flightDefinitionId: 'flight-1' }),
       action: 'check_in_opening',
-      operationalDate: '2026-06-26',
       payload: {
         languages: ['en'],
         checkInCounterIds: ['counter-1', 'counter-3'],
@@ -225,7 +224,6 @@ describe('DispatcherLaunchPanel', () => {
     expect(mutate).toHaveBeenCalledWith({
       flight: expect.objectContaining({ flightDefinitionId: 'flight-1' }),
       action: 'boarding_invitation',
-      operationalDate: '2026-06-26',
       payload: {
         languages: ['en'],
         checkInCounterIds: [],

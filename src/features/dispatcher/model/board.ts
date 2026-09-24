@@ -8,12 +8,12 @@ import type {
 } from './types'
 
 /**
- * Merge active flight definitions with today's occurrences into board cards.
+ * Merge active flight definitions with the board's current occurrences into cards.
  *
  * The board is definition-driven: every active card is shown, and the status is
- * taken from its occurrence for the day when one exists, otherwise the card is
- * "not_started" (no occurrence yet). Occurrences for inactive/unknown
- * definitions are ignored.
+ * taken from its current occurrence when one exists (today's run, or a run carried
+ * over from the previous day), otherwise the card is "not_started". Occurrences
+ * for inactive/unknown definitions are ignored.
  */
 export function buildBoardFlights(
   definitions: FlightDefinition[],
@@ -34,6 +34,7 @@ export function buildBoardFlights(
       originAirportCode: definition.originAirportCode,
       destinationAirportCode: definition.destinationAirportCode,
       occurrenceId: occurrence?.id ?? null,
+      occurrenceDate: occurrence?.operationalDate ?? null,
       status: occurrence?.status ?? 'not_started',
     }
   })
@@ -78,6 +79,21 @@ export function isEligibleForAction(
     case 'boarding_invitation':
       return flight.status === 'check_in_closed'
   }
+}
+
+/**
+ * Whether the card's current run was started on an earlier operational day and is
+ * still in progress past midnight (task 027).
+ */
+export function isCarriedOver(
+  flight: BoardFlight,
+  operationalDate: string | null,
+): boolean {
+  return (
+    operationalDate !== null &&
+    flight.occurrenceDate !== null &&
+    flight.occurrenceDate !== operationalDate
+  )
 }
 
 export function filterEligibleFlights(

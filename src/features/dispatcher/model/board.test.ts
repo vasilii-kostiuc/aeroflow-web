@@ -6,6 +6,7 @@ import {
   buildBoardFlights,
   filterEligibleFlights,
   hasFinishedRun,
+  isCarriedOver,
   isEligibleForAction,
   matchesSearch,
 } from './board'
@@ -52,6 +53,7 @@ function flight(overrides: Partial<BoardFlight> = {}): BoardFlight {
     originAirportCode: 'KIV',
     destinationAirportCode: 'IST',
     occurrenceId: null,
+    occurrenceDate: null,
     status: 'not_started',
     ...overrides,
   }
@@ -72,6 +74,7 @@ describe('buildBoardFlights', () => {
     )
 
     expect(row.occurrenceId).toBe('occ-1')
+    expect(row.occurrenceDate).toBe('2026-06-26')
     expect(row.status).toBe('check_in_open')
   })
 
@@ -198,5 +201,23 @@ describe('matchesSearch', () => {
     expect(matchesSearch(row, '5f')).toBe(true)
     expect(matchesSearch(row, 'ist')).toBe(true)
     expect(matchesSearch(row, 'zzz')).toBe(false)
+  })
+})
+
+describe('isCarriedOver', () => {
+  it('marks a run started on an earlier operational day', () => {
+    expect(
+      isCarriedOver(flight({ occurrenceDate: '2026-06-25' }), '2026-06-26'),
+    ).toBe(true)
+  })
+
+  it('does not mark a run of the board day or a card without a run', () => {
+    expect(
+      isCarriedOver(flight({ occurrenceDate: '2026-06-26' }), '2026-06-26'),
+    ).toBe(false)
+    expect(isCarriedOver(flight(), '2026-06-26')).toBe(false)
+    expect(isCarriedOver(flight({ occurrenceDate: '2026-06-25' }), null)).toBe(
+      false,
+    )
   })
 })

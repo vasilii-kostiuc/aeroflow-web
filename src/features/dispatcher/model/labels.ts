@@ -71,6 +71,17 @@ export function boardStatusLabel(status: BoardStatus): string {
   return isBoardStarted(status) ? statusLabels[status] : statusLabels.not_started
 }
 
+/**
+ * Format an operational date (Y-m-d, a calendar day with no time zone) for the
+ * panel. Split rather than parsed with Date, which would shift it by the browser's
+ * time zone.
+ */
+export function formatOperationalDate(date: string): string {
+  const [, month, day] = date.split('-')
+
+  return `${day}.${month}`
+}
+
 export function actionRequiresCounters(action: DispatcherActionType): boolean {
   return action === 'check_in_opening'
 }

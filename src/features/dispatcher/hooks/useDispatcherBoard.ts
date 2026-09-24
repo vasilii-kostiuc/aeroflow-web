@@ -6,7 +6,7 @@ import { getFlightDefinitions } from '@/features/flight-definitions/api/flightDe
 import { flightDefinitionKeys } from '@/features/flight-definitions/api/flightDefinitionKeys'
 import type { FlightDefinitionFilters } from '@/features/flight-definitions/model/types'
 
-import { getDispatcherOccurrences } from '../api/dispatcherApi'
+import { getDispatcherBoard } from '../api/dispatcherApi'
 import { dispatcherKeys } from '../api/dispatcherKeys'
 import { buildBoardFlights } from '../model/board'
 
@@ -16,15 +16,22 @@ const activeFilters: FlightDefinitionFilters = {
   limit: 100,
 }
 
-export function useDispatcherBoard(operationalDate: string) {
+/**
+ * Polled so that a new operational day and actions from other workstations reach
+ * the board without a reload — the server owns the day (task 027).
+ */
+const BOARD_POLL_INTERVAL_MS = 15_000
+
+export function useDispatcherBoard() {
   const definitionsQuery = useQuery({
     queryKey: flightDefinitionKeys.list(activeFilters),
     queryFn: () => getFlightDefinitions(activeFilters),
   })
 
-  const occurrencesQuery = useQuery({
-    queryKey: dispatcherKeys.occurrences(operationalDate),
-    queryFn: () => getDispatcherOccurrences(operationalDate),
+  const boardQuery = useQuery({
+    queryKey: dispatcherKeys.board,
+    queryFn: getDispatcherBoard,
+    refetchInterval: BOARD_POLL_INTERVAL_MS,
   })
 
   const flights = useMemo(() => {
@@ -32,17 +39,18 @@ export function useDispatcherBoard(operationalDate: string) {
 
     return buildBoardFlights(
       definitionsQuery.data.items,
-      occurrencesQuery.data ?? [],
+      boardQuery.data?.occurrences ?? [],
     )
-  }, [definitionsQuery.data, occurrencesQuery.data])
+  }, [definitionsQuery.data, boardQuery.data])
 
   return {
     flights,
-    isLoading: definitionsQuery.isLoading || occurrencesQuery.isLoading,
-    isError: definitionsQuery.isError || occurrencesQuery.isError,
+    operationalDate: boardQuery.data?.operationalDate ?? null,
+    isLoading: definitionsQuery.isLoading || boardQuery.isLoading,
+    isError: definitionsQuery.isError || boardQuery.isError,
     refetch: () => {
       void definitionsQuery.refetch()
-      void occurrencesQuery.refetch()
+      void boardQuery.refetch()
     },
   }
 }

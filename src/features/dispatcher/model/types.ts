@@ -28,10 +28,10 @@ export type OccurrenceStatus =
   | 'completed'
   | 'cancelled'
 
-/** Synthetic status for an active card that has no occurrence yet today. */
+/** Synthetic status for an active card that has no current occurrence. */
 export type BoardStatus = 'not_started' | OccurrenceStatus
 
-/** Read-model item from GET /dispatcher/flight-occurrences. */
+/** Read-model item of the dispatcher board (GET /dispatcher/board). */
 export type DispatcherOccurrence = {
   id: string
   flightDefinitionId: string
@@ -44,6 +44,15 @@ export type DispatcherOccurrence = {
   eligible: boolean
   unavailableReason: string | null
   availableLanguages: string[]
+}
+
+/**
+ * GET /dispatcher/board: the airport's current operational day and at most one
+ * current occurrence per card (task 027).
+ */
+export type DispatcherBoard = {
+  operationalDate: string
+  occurrences: DispatcherOccurrence[]
 }
 
 /** Persisted occurrence returned by create/ensure/launch endpoints. */
@@ -83,7 +92,7 @@ export type LaunchPayload = {
   gateId: string | null
 }
 
-/** A flight card on the dispatcher board: definition + today's occurrence status. */
+/** A flight card on the dispatcher board: definition + its current occurrence. */
 export type BoardFlight = {
   flightDefinitionId: string
   flightNumber: string
@@ -91,6 +100,11 @@ export type BoardFlight = {
   originAirportCode: string
   destinationAirportCode: string
   occurrenceId: string | null
+  /**
+   * Operational date of the current occurrence. Differs from the board's day for
+   * a run started before midnight and not yet finished.
+   */
+  occurrenceDate: string | null
   status: BoardStatus
 }
 

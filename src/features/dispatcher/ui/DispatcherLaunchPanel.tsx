@@ -27,7 +27,6 @@ import { OperationalResourceButtonPicker } from './OperationalResourceButtonPick
 type Props = {
   flight: BoardFlight | null
   action: DispatcherActionType
-  operationalDate: string
   resolveAirportLabel: (code: string) => string
 }
 
@@ -46,7 +45,6 @@ function errorMessage(error: unknown): string {
 export function DispatcherLaunchPanel({
   flight,
   action,
-  operationalDate,
   resolveAirportLabel,
 }: Props) {
   const languagesQuery = useLanguages()
@@ -113,7 +111,6 @@ export function DispatcherLaunchPanel({
     launch.mutate({
       flight,
       action,
-      operationalDate,
       payload: {
         languages,
         checkInCounterIds: needsCounters ? counterIds : [],
