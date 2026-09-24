@@ -9,6 +9,7 @@ import { FlightDefinitionCreatePage } from '@/pages/flight-definitions/FlightDef
 import { FlightDefinitionDetailsPage } from '@/pages/flight-definitions/FlightDefinitionDetailsPage'
 import { AirportsPage } from '@/pages/airports/AirportsPage'
 import { SupplementaryTemplatesPage } from '@/pages/supplementary-templates/SupplementaryTemplatesPage'
+import { EmergencyTemplatesPage } from '@/pages/emergency-templates/EmergencyTemplatesPage'
 import { DispatcherPage } from '@/pages/dispatcher/DispatcherPage'
 import { LoginPage } from '@/pages/login/LoginPage'
 import { NotFoundPage } from '@/pages/not-found/NotFoundPage'
@@ -52,6 +53,10 @@ export const router = createBrowserRouter([
       {
         path: paths.supplementaryTemplates,
         element: <SupplementaryTemplatesPage />,
+      },
+      {
+        path: paths.emergencyTemplates,
+        element: <EmergencyTemplatesPage />,
       },
       {
         path: paths.dispatcher,

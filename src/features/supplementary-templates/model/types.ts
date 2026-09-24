@@ -1,33 +1,18 @@
-/** One language variant of a preset: the audio asset that voices it in that language. */
-export type SupplementaryTemplateVariant = {
-  languageCode: string
-  audioAssetId: string
-}
+import type {
+  AnnouncementPreset,
+  AnnouncementPresetInput,
+  AnnouncementPresetVariant,
+} from '@/features/announcement-presets/model/types'
 
 /**
- * A reusable supplementary announcement preset (task 024) — heir of the legacy САО
- * "Дополнительно" set. Admin-managed: a name plus per-language pre-recorded/generated
- * audio.
+ * A supplementary announcement preset (task 024) — heir of the legacy САО
+ * "Дополнительно" set. Shape-wise it is the shared announcement preset; the feature
+ * keeps its own names so its API and hooks read in its own language.
  */
-export type SupplementaryTemplate = {
-  id: string
-  name: string
-  variants: SupplementaryTemplateVariant[]
-  languageCodes: string[]
-  active: boolean
-  createdAt: string
-  updatedAt: string
-}
+export type SupplementaryTemplateVariant = AnnouncementPresetVariant
 
-export type SupplementaryTemplateInput = {
-  name: string
-  variants: SupplementaryTemplateVariant[]
-}
+export type SupplementaryTemplate = AnnouncementPreset
 
-/** Active audio asset available to voice a preset variant. */
-export type AudioAsset = {
-  id: string
-  name: string
-  languageCode: string
-  active: boolean
-}
+export type SupplementaryTemplateInput = AnnouncementPresetInput
+
+export type { AudioAsset } from '@/features/announcement-presets/model/types'

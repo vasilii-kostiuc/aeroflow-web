@@ -23,6 +23,7 @@ const stateColors: Record<PlaybackQueueRow['state'], string> = {
   playing: 'green',
   waiting: 'blue',
   rescheduled: 'blue',
+  preempted: 'red',
   completed: 'gray',
   failed: 'red',
   cancelled: 'gray',
@@ -33,6 +34,7 @@ const stateLabels: Record<PlaybackQueueRow['state'], string> = {
   playing: 'Звучит',
   waiting: 'В очереди',
   rescheduled: 'Ждёт повтора',
+  preempted: 'Прервано экстренным',
   completed: 'Завершено',
   failed: 'Ошибка',
   cancelled: 'Отменено',
@@ -169,6 +171,11 @@ function Section({
  * only the announcement, never the flight — and the playing row can be stopped
  * (task 019). A repeat series waiting for its next tick (task 023) sits among the
  * waiting rows with the time it sounds again, and offers neither action.
+ *
+ * A row an emergency cut short (task 026) also waits rather than ends: playback
+ * requeued it at its original place, so it is labelled «Прервано экстренным» and
+ * will sound again once the mode is lifted. That is a different fact from the
+ * operator's own Stop («Прервано»), which is terminal.
  */
 export function PlaybackQueueDrawer({
   opened,

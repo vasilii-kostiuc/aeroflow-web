@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
+  useAudioAssets,
+  useGenerateAudioAsset,
+} from '@/features/announcement-presets/hooks/useAudioAssets'
+
+import {
   changeSupplementaryTemplateStatus,
   createSupplementaryTemplate,
-  generateAudioAsset,
-  getAudioAssets,
   getSupplementaryTemplates,
   updateSupplementaryTemplate,
 } from '../api/supplementaryTemplateApi'
@@ -12,20 +15,16 @@ import type { SupplementaryTemplateInput } from '../model/types'
 
 export const supplementaryTemplateKeys = {
   all: ['supplementary-templates'] as const,
-  audioAssets: ['supplementary-templates', 'audio-assets'] as const,
 }
+
+// The audio catalog is the same for every preset kind, so its queries live with the
+// shared preset code and are re-exported here for this feature's own screens.
+export { useAudioAssets, useGenerateAudioAsset }
 
 export function useSupplementaryTemplates() {
   return useQuery({
     queryKey: supplementaryTemplateKeys.all,
     queryFn: getSupplementaryTemplates,
-  })
-}
-
-export function useAudioAssets() {
-  return useQuery({
-    queryKey: supplementaryTemplateKeys.audioAssets,
-    queryFn: getAudioAssets,
   })
 }
 
@@ -62,19 +61,5 @@ export function useChangeSupplementaryTemplateStatus() {
     mutationFn: ({ id, active }: { id: string; active: boolean }) =>
       changeSupplementaryTemplateStatus(id, active),
     onSuccess: invalidate,
-  })
-}
-
-/** Generate an audio asset from text; refresh the assets list so it becomes pickable. */
-export function useGenerateAudioAsset() {
-  const client = useQueryClient()
-
-  return useMutation({
-    mutationFn: (input: { text: string; languageCode: string }) =>
-      generateAudioAsset(input),
-    onSuccess: () =>
-      client.invalidateQueries({
-        queryKey: supplementaryTemplateKeys.audioAssets,
-      }),
   })
 }

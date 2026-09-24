@@ -8,5 +8,6 @@ export const paths = {
     `/flight-definitions/${id}?tab=${tab}`,
   airports: '/airports',
   supplementaryTemplates: '/supplementary-announcements',
+  emergencyTemplates: '/emergency-announcements',
   dispatcher: '/dispatcher',
 } as const

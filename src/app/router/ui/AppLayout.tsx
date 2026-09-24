@@ -1,6 +1,7 @@
 import { AppShell, Burger, Group, NavLink, Text, Title } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import {
+  IconAlertTriangle,
   IconBroadcast,
   IconBuildingAirport,
   IconPlaneDeparture,
@@ -65,6 +66,13 @@ export function AppLayout() {
           to={paths.supplementaryTemplates}
           label="Дополнительные объявления"
           leftSection={<IconSpeakerphone size={18} />}
+          onClick={close}
+        />
+        <NavLink
+          component={RouterNavLink}
+          to={paths.emergencyTemplates}
+          label="Экстренные объявления"
+          leftSection={<IconAlertTriangle size={18} />}
           onClick={close}
         />
         <NavLink
