@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Badge,
   Group,
   Menu,
   Table,
@@ -17,7 +16,12 @@ import {
 
 import type { FlightDefinition } from '../model/types'
 import { useAirports } from '@/features/airports/hooks/useAirports'
-import { formatAirportLabel } from '@/features/airports/model/formatAirportLabel'
+import type { Airport } from '@/features/airports/model/types'
+import {
+  formatAirportLabel,
+  formatAirportShortLabel,
+} from '@/features/airports/model/formatAirportLabel'
+import { StatusBadge } from '@/shared/ui/StatusBadge'
 
 type Props = {
   items: FlightDefinition[]
@@ -33,6 +37,17 @@ const directionLabels = {
   arrival: 'Прибытие',
 }
 
+/** «Город (CODE)» in the table; the full airport name is one hover away. */
+function AirportCell({ code, airport }: { code: string; airport?: Airport }) {
+  if (!airport) return <Text>{code}</Text>
+
+  return (
+    <Tooltip label={formatAirportLabel(airport)} openDelay={300}>
+      <Text>{formatAirportShortLabel(airport)}</Text>
+    </Tooltip>
+  )
+}
+
 export function FlightDefinitionTable({
   items,
   pendingId,
@@ -46,10 +61,6 @@ export function FlightDefinitionTable({
     (airports.data?.items ?? []).map((airport) => [airport.code, airport]),
   )
 
-  function airportLabel(code: string) {
-    const airport = airportByCode.get(code)
-    return airport ? formatAirportLabel(airport) : code
-  }
 
   return (
     <Table.ScrollContainer minWidth={720}>
@@ -59,7 +70,7 @@ export function FlightDefinitionTable({
             <Table.Th>Рейс</Table.Th>
             <Table.Th>Направление</Table.Th>
             <Table.Th>Маршрут</Table.Th>
-            <Table.Th>Статус</Table.Th>
+            <Table.Th w={140}>Статус</Table.Th>
             <Table.Th w={60}>
               <span className="visually-hidden">Действия</span>
             </Table.Th>
@@ -74,15 +85,23 @@ export function FlightDefinitionTable({
               <Table.Td>{directionLabels[item.direction]}</Table.Td>
               <Table.Td>
                 <Group gap="xs" wrap="nowrap">
-                  <Text>{airportLabel(item.originAirportCode)}</Text>
+                  <AirportCell
+                    code={item.originAirportCode}
+                    airport={airportByCode.get(item.originAirportCode)}
+                  />
                   <Text c="dimmed">→</Text>
-                  <Text>{airportLabel(item.destinationAirportCode)}</Text>
+                  <AirportCell
+                    code={item.destinationAirportCode}
+                    airport={airportByCode.get(item.destinationAirportCode)}
+                  />
                 </Group>
               </Table.Td>
               <Table.Td>
-                <Badge color={item.active ? 'green' : 'gray'} variant="light">
-                  {item.active ? 'Активна' : 'Неактивна'}
-                </Badge>
+                <StatusBadge
+                  active={item.active}
+                  activeLabel="Активна"
+                  inactiveLabel="Неактивна"
+                />
               </Table.Td>
               <Table.Td>
                 <Menu position="bottom-end" withinPortal>

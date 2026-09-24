@@ -1,6 +1,5 @@
 import {
   Alert,
-  Badge,
   Button,
   Center,
   Group,
@@ -28,6 +27,7 @@ import type {
 } from '@/features/flight-definitions/model/types'
 import { FlightAnnouncementConfigsPanel } from '@/features/flight-definitions/ui/announcement-configs/FlightAnnouncementConfigsPanel'
 import { FlightDefinitionDetailsForm } from '@/features/flight-definitions/ui/FlightDefinitionDetailsForm'
+import { StatusBadge } from '@/shared/ui/StatusBadge'
 
 type TabValue = 'details' | 'announcements'
 
@@ -146,9 +146,11 @@ function FlightDefinitionHeader({
       <Stack gap={4}>
         <Group gap="xs">
           <Title order={1}>{flightDefinition.flightNumber}</Title>
-          <Badge color={flightDefinition.active ? 'green' : 'gray'} variant="light">
-            {flightDefinition.active ? 'Активна' : 'Неактивна'}
-          </Badge>
+          <StatusBadge
+            active={flightDefinition.active}
+            activeLabel="Активна"
+            inactiveLabel="Неактивна"
+          />
         </Group>
         <Text c="dimmed">
           {directionLabels[flightDefinition.direction]} ·{' '}

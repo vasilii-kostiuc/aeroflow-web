@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import {
   ActionIcon,
   Alert,
-  Badge,
   Button,
   Group,
   Loader,
@@ -15,6 +14,8 @@ import {
   Title,
 } from '@mantine/core'
 import { IconDotsVertical, IconEdit, IconPlus } from '@tabler/icons-react'
+
+import { StatusBadge } from '@/shared/ui/StatusBadge'
 
 import type { AnnouncementPreset } from '../model/types'
 
@@ -57,12 +58,16 @@ export function AnnouncementPresetsScreen({
 }: Props) {
   return (
     <Stack gap="lg">
-      <Group justify="space-between">
+      <Group justify="space-between" align="flex-start" wrap="nowrap">
         <div>
           <Title order={1}>{title}</Title>
           <Text c="dimmed">{description}</Text>
         </div>
-        <Button leftSection={<IconPlus size={18} />} onClick={onAdd}>
+        <Button
+          leftSection={<IconPlus size={18} />}
+          onClick={onAdd}
+          style={{ flexShrink: 0 }}
+        >
           {addLabel}
         </Button>
       </Group>
@@ -95,9 +100,7 @@ export function AnnouncementPresetsScreen({
                           .join(', ')}
                       </Table.Td>
                       <Table.Td>
-                        <Badge color={preset.active ? 'green' : 'gray'}>
-                          {preset.active ? 'Активно' : 'Неактивно'}
-                        </Badge>
+                        <StatusBadge active={preset.active} />
                       </Table.Td>
                       <Table.Td>
                         <Menu position="bottom-end">
