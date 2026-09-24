@@ -211,7 +211,7 @@ function AudioAssetUploader({
           Загрузить
         </Button>
       </Group>
-      {error && <Alert color="red">{error}</Alert>}
+      {error && <Alert color="danger">{error}</Alert>}
     </Stack>
   )
 }

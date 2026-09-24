@@ -132,7 +132,7 @@ export function FlightDefinitionTable({
                     </Menu.Item>
                     {item.active ? (
                       <Menu.Item
-                        color="red"
+                        color="danger"
                         leftSection={<IconPlayerPause size={16} />}
                         onClick={() => onDeactivate(item)}
                       >
@@ -140,7 +140,7 @@ export function FlightDefinitionTable({
                       </Menu.Item>
                     ) : (
                       <Menu.Item
-                        color="green"
+                        color="success"
                         leftSection={<IconPlayerPlay size={16} />}
                         onClick={() => onActivate(item)}
                       >

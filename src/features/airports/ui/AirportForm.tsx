@@ -78,7 +78,7 @@ export function AirportForm({ airport, onClose }: Props) {
     <Modal opened onClose={onClose} title={airport ? 'Редактировать аэропорт' : 'Новый аэропорт'} centered>
       <form onSubmit={form.onSubmit(submit)}>
         <Stack>
-          {error && <Alert color="red">{error}</Alert>}
+          {error && <Alert color="danger">{error}</Alert>}
           <TextInput label="IATA-код" required disabled={airport !== null} maxLength={3} {...form.getInputProps('code')} />
           <TextInput label="Город" required {...form.getInputProps('cityName')} />
           <TextInput label="Название аэропорта" required {...form.getInputProps('name')} />

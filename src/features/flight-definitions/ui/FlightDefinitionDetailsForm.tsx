@@ -132,7 +132,7 @@ function FlightDefinitionFields({
   return (
     <Stack>
       {formError && (
-        <Alert color="red" icon={<IconAlertCircle size={18} />}>
+        <Alert color="danger" icon={<IconAlertCircle size={18} />}>
           {formError}
         </Alert>
       )}

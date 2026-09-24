@@ -8,7 +8,6 @@ import {
   Paper,
   Stack,
   Text,
-  Title,
 } from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { notifications } from '@mantine/notifications'
@@ -32,6 +31,7 @@ import {
 import { FlightDefinitionFilters as Filters } from '@/features/flight-definitions/ui/FlightDefinitionFilters'
 import { FlightDefinitionTable } from '@/features/flight-definitions/ui/FlightDefinitionTable'
 import { ApiClientError } from '@/shared/api/apiClient'
+import { PageHeader } from '@/shared/ui/PageHeader'
 import { useState } from 'react'
 
 export function FlightDefinitionsPage() {
@@ -57,7 +57,7 @@ export function FlightDefinitionsPage() {
         await deactivateMutation.mutateAsync(item.id)
       }
       notifications.show({
-        color: 'green',
+        color: 'success',
         message: active
           ? `Рейс ${item.flightNumber} активирован`
           : `Рейс ${item.flightNumber} деактивирован`,
@@ -67,7 +67,7 @@ export function FlightDefinitionsPage() {
         await definitions.refetch()
       }
       notifications.show({
-        color: 'red',
+        color: 'danger',
         title: 'Не удалось изменить статус',
         message:
           error instanceof Error ? error.message : 'Повторите попытку позже',
@@ -87,30 +87,27 @@ export function FlightDefinitionsPage() {
         </Text>
       ),
       labels: { confirm: 'Деактивировать', cancel: 'Отмена' },
-      confirmProps: { color: 'red' },
+      confirmProps: { color: 'danger' },
       onConfirm: () => void changeActive(item, false),
     })
   }
 
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="flex-start">
-        <div>
-          <Title order={1}>Карточки рейсов</Title>
-          <Text c="dimmed" mt={4}>
-            Административное управление справочником рейсов.
-          </Text>
-        </div>
+      <PageHeader
+        title="Карточки рейсов"
+        description="Постоянные карточки рейсов, по которым диспетчер запускает объявления."
+        actions={
+          <Button
+            leftSection={<IconPlus size={18} />}
+            onClick={() => navigate(paths.flightDefinitionNew)}
+          >
+            Добавить карточку
+          </Button>
+        }
+      />
 
-        <Button
-          leftSection={<IconPlus size={18} />}
-          onClick={() => navigate(paths.flightDefinitionNew)}
-        >
-          Добавить карточку
-        </Button>
-      </Group>
-
-      <Paper withBorder radius="lg" p="lg">
+      <Paper withBorder p="lg">
         <Stack>
           <Filters filters={filters} onChange={updateFilters} />
 
@@ -121,7 +118,7 @@ export function FlightDefinitionsPage() {
           )}
 
           {definitions.isError && (
-            <Alert color="red" title="Не удалось загрузить карточки">
+            <Alert color="danger" title="Не удалось загрузить карточки">
               <Stack gap="sm">
                 <Text size="sm">
                   {definitions.error instanceof Error
@@ -130,7 +127,7 @@ export function FlightDefinitionsPage() {
                 </Text>
                 <Button
                   variant="light"
-                  color="red"
+                  color="danger"
                   onClick={() => void definitions.refetch()}
                   w="fit-content"
                 >

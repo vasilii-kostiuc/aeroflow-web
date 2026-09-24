@@ -2,13 +2,11 @@ import {
   Alert,
   Button,
   Center,
-  Group,
   Loader,
   Paper,
   Stack,
   Tabs,
   Text,
-  Title,
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { IconArrowLeft } from '@tabler/icons-react'
@@ -28,6 +26,7 @@ import type {
 import { FlightAnnouncementConfigsPanel } from '@/features/flight-definitions/ui/announcement-configs/FlightAnnouncementConfigsPanel'
 import { FlightDefinitionDetailsForm } from '@/features/flight-definitions/ui/FlightDefinitionDetailsForm'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
+import { PageHeader } from '@/shared/ui/PageHeader'
 
 type TabValue = 'details' | 'announcements'
 
@@ -53,7 +52,7 @@ export function FlightDefinitionDetailsPage() {
     if (!id) return
     const updated = await updateMutation.mutateAsync({ id, input })
     notifications.show({
-      color: 'green',
+      color: 'success',
       message: `Карточка ${updated.flightNumber} сохранена`,
     })
   }
@@ -77,7 +76,7 @@ export function FlightDefinitionDetailsPage() {
         >
           К списку
         </Button>
-        <Alert color="red" title="Не удалось загрузить карточку">
+        <Alert color="danger" title="Не удалось загрузить карточку">
           <Stack gap="sm">
             <Text size="sm">
               {flight.error instanceof Error
@@ -86,7 +85,7 @@ export function FlightDefinitionDetailsPage() {
             </Text>
             <Button
               variant="light"
-              color="red"
+              color="danger"
               onClick={() => void flight.refetch()}
               w="fit-content"
             >
@@ -142,33 +141,35 @@ function FlightDefinitionHeader({
   const destination = airportByCode.get(flightDefinition.destinationAirportCode)
 
   return (
-    <Group justify="space-between" align="flex-start">
-      <Stack gap={4}>
-        <Group gap="xs">
-          <Title order={1}>{flightDefinition.flightNumber}</Title>
-          <StatusBadge
-            active={flightDefinition.active}
-            activeLabel="Активна"
-            inactiveLabel="Неактивна"
-          />
-        </Group>
-        <Text c="dimmed">
+    <PageHeader
+      title={flightDefinition.flightNumber}
+      badge={
+        <StatusBadge
+          active={flightDefinition.active}
+          activeLabel="Активна"
+          inactiveLabel="Неактивна"
+        />
+      }
+      description={
+        <>
           {directionLabels[flightDefinition.direction]} ·{' '}
           {origin ? formatAirportLabel(origin) : flightDefinition.originAirportCode}
           {' → '}
           {destination
             ? formatAirportLabel(destination)
             : flightDefinition.destinationAirportCode}
-        </Text>
-      </Stack>
-      <Button
-        variant="default"
-        leftSection={<IconArrowLeft size={18} />}
-        onClick={() => navigate(paths.flightDefinitions)}
-      >
-        К списку
-      </Button>
-    </Group>
+        </>
+      }
+      actions={
+        <Button
+          variant="default"
+          leftSection={<IconArrowLeft size={18} />}
+          onClick={() => navigate(paths.flightDefinitions)}
+        >
+          К списку
+        </Button>
+      }
+    />
   )
 }
 

@@ -13,7 +13,7 @@ export function confirmDiscardChanges(onDiscard: () => void, onKeep?: () => void
     title: UNSAVED_CHANGES_TITLE,
     children: <Text size="sm">{UNSAVED_CHANGES_MESSAGE}</Text>,
     labels: { confirm: 'Отменить изменения', cancel: 'Остаться' },
-    confirmProps: { color: 'red' },
+    confirmProps: { color: 'danger' },
     onConfirm: onDiscard,
     onCancel: onKeep,
   })

@@ -41,13 +41,13 @@ export function EmergencyModeBanner() {
         </Text>
       ),
       labels: { confirm: 'Деактивировать', cancel: 'Отмена' },
-      confirmProps: { color: 'red' },
+      confirmProps: { color: 'danger' },
       onConfirm: () => deactivate.mutate(),
     })
 
   return (
     <Alert
-      color="red"
+      color="danger"
       variant="filled"
       icon={<IconAlertTriangle size={18} />}
       title="Экстренный режим активен"
@@ -60,7 +60,7 @@ export function EmergencyModeBanner() {
         <Button
           size="compact-sm"
           variant="white"
-          color="red"
+          color="danger"
           loading={deactivate.isPending}
           onClick={confirmDeactivate}
         >

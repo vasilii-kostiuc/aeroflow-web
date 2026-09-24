@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Alert, Button, Group, Paper, Select, Stack, Text } from '@mantine/core'
+import { Alert, Box, Button, Group, Select, Stack, Text } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons-react'
 
 import type { Language } from '@/features/languages/model/types'
@@ -70,7 +70,11 @@ export function VariantEditor({
   const cancel = () => (dirty ? confirmDiscardChanges(onCancel) : onCancel())
 
   return (
-    <Paper withBorder p="md" style={{ borderColor: 'var(--mantine-color-blue-5)' }}>
+    <Box
+      p="md"
+      bg="var(--mantine-color-blue-light)"
+      style={{ borderLeft: '3px solid var(--mantine-color-blue-filled)' }}
+    >
       <Stack gap="sm">
         <Text fw={600}>{title}</Text>
 
@@ -104,7 +108,7 @@ export function VariantEditor({
         ) : null}
 
         {error ? (
-          <Alert color="red" icon={<IconAlertCircle size={16} />}>
+          <Alert color="danger" icon={<IconAlertCircle size={16} />}>
             {error}
           </Alert>
         ) : null}
@@ -127,6 +131,6 @@ export function VariantEditor({
           </Group>
         </Group>
       </Stack>
-    </Paper>
+    </Box>
   )
 }

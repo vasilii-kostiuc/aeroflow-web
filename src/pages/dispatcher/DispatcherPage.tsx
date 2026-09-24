@@ -5,11 +5,9 @@ import {
   Button,
   Center,
   Grid,
-  Group,
   Loader,
   Stack,
   Text,
-  Title,
 } from '@mantine/core'
 import {
   IconAlertCircle,
@@ -33,6 +31,7 @@ import { EmergencyAnnouncementModal } from '@/features/dispatcher/ui/EmergencyAn
 import { EmergencyModeBanner } from '@/features/dispatcher/ui/EmergencyModeBanner'
 import { PlaybackQueueDrawer } from '@/features/dispatcher/ui/PlaybackQueueDrawer'
 import { SupplementaryAnnouncementModal } from '@/features/dispatcher/ui/SupplementaryAnnouncementModal'
+import { PageHeader } from '@/shared/ui/PageHeader'
 
 export function DispatcherPage() {
   const [action, setAction] = useState<DispatcherActionType>('check_in_opening')
@@ -71,44 +70,42 @@ export function DispatcherPage() {
 
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="flex-end" wrap="wrap">
-        <div>
-          <Title order={2}>Панель диспетчера</Title>
-          <Text c="dimmed" size="sm">
-            Запуск рейсовых объявлений по активным рейсам
-          </Text>
-        </div>
-        <Group align="flex-end">
-          <Button
-            variant="default"
-            leftSection={<IconSpeakerphone size={16} />}
-            onClick={() => setSupplementaryOpened(true)}
-          >
-            Дополнительное объявление
-          </Button>
-          <Button
-            color="red"
-            leftSection={<IconAlertTriangle size={16} />}
-            onClick={() => setEmergencyOpened(true)}
-          >
-            Экстренное объявление
-          </Button>
-          <Button
-            variant="default"
-            leftSection={<IconPlaylist size={16} />}
-            onClick={() => setStatusOpened(true)}
-          >
-            Статус
-          </Button>
-        </Group>
-      </Group>
+      <PageHeader
+        title="Панель диспетчера"
+        description="Запуск рейсовых и аэропортовых объявлений"
+        actions={
+          <>
+            <Button
+              variant="default"
+              leftSection={<IconSpeakerphone size={16} />}
+              onClick={() => setSupplementaryOpened(true)}
+            >
+              Дополнительное объявление
+            </Button>
+            <Button
+              color="danger"
+              leftSection={<IconAlertTriangle size={16} />}
+              onClick={() => setEmergencyOpened(true)}
+            >
+              Экстренное объявление
+            </Button>
+            <Button
+              variant="default"
+              leftSection={<IconPlaylist size={16} />}
+              onClick={() => setStatusOpened(true)}
+            >
+              Статус
+            </Button>
+          </>
+        }
+      />
 
       <EmergencyModeBanner />
 
       <DispatcherActionFilter value={action} onChange={setAction} />
 
       {board.isError ? (
-        <Alert color="red" icon={<IconAlertCircle size={16} />}>
+        <Alert color="danger" icon={<IconAlertCircle size={16} />}>
           Не удалось загрузить рейсы. Повторите попытку позже.
         </Alert>
       ) : board.isLoading ? (

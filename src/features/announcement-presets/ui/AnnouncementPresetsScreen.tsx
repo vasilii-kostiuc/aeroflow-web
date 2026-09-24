@@ -4,18 +4,17 @@ import {
   ActionIcon,
   Alert,
   Button,
-  Group,
   Loader,
   Menu,
   Paper,
   Stack,
   Table,
   Text,
-  Title,
 } from '@mantine/core'
 import { IconDotsVertical, IconEdit, IconPlus } from '@tabler/icons-react'
 
 import { StatusBadge } from '@/shared/ui/StatusBadge'
+import { PageHeader } from '@/shared/ui/PageHeader'
 
 import type { AnnouncementPreset } from '../model/types'
 
@@ -58,24 +57,20 @@ export function AnnouncementPresetsScreen({
 }: Props) {
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="flex-start" wrap="nowrap">
-        <div>
-          <Title order={1}>{title}</Title>
-          <Text c="dimmed">{description}</Text>
-        </div>
-        <Button
-          leftSection={<IconPlus size={18} />}
-          onClick={onAdd}
-          style={{ flexShrink: 0 }}
-        >
-          {addLabel}
-        </Button>
-      </Group>
+      <PageHeader
+        title={title}
+        description={description}
+        actions={
+          <Button leftSection={<IconPlus size={18} />} onClick={onAdd}>
+            {addLabel}
+          </Button>
+        }
+      />
 
-      <Paper withBorder radius="lg" p="lg">
+      <Paper withBorder p="lg">
         <Stack>
           {isPending && <Loader aria-label={loadingLabel} />}
-          {isError && <Alert color="red">{loadErrorText}</Alert>}
+          {isError && <Alert color="danger">{loadErrorText}</Alert>}
           {presets?.length === 0 && <Text c="dimmed">{emptyText}</Text>}
           {presets && presets.length > 0 && (
             <Table.ScrollContainer minWidth={600}>
@@ -120,7 +115,7 @@ export function AnnouncementPresetsScreen({
                               Редактировать
                             </Menu.Item>
                             <Menu.Item
-                              color={preset.active ? 'red' : 'green'}
+                              color={preset.active ? 'danger' : 'success'}
                               onClick={() => onChangeStatus(preset)}
                             >
                               {preset.active ? 'Деактивировать' : 'Активировать'}

@@ -158,7 +158,7 @@ export function SegmentList({
                   <Tooltip label="Удалить">
                     <ActionIcon
                       variant="subtle"
-                      color="red"
+                      color="danger"
                       aria-label={`Удалить сегмент ${index + 1} (${ariaContext})`}
                       onClick={() => removeSegment(index)}
                     >

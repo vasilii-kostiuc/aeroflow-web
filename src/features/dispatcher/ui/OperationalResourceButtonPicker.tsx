@@ -44,7 +44,7 @@ export function OperationalResourceButtonPicker({
       <Text component="div" size="sm" fw={500}>
         {label}
         {required ? (
-          <Text component="span" c="red" inherit>
+          <Text component="span" c="danger" inherit>
             {' '}
             *
           </Text>

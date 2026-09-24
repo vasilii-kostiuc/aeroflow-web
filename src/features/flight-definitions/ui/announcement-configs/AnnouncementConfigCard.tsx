@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 
 import {
   Alert,
   Badge,
   Button,
+  Divider,
   Group,
   NumberInput,
   Paper,
@@ -58,9 +59,9 @@ function ConfigStatus({ config }: { config: FlightAnnouncementConfig }) {
   if (!config.enabled) return <Badge color="gray">Выключено</Badge>
 
   return config.isValidForDispatcher ? (
-    <Badge color="teal">Готово</Badge>
+    <Badge color="success">Готово</Badge>
   ) : (
-    <Badge color="yellow">Требует настройки</Badge>
+    <Badge color="warning">Требует настройки</Badge>
   )
 }
 
@@ -165,7 +166,7 @@ export function AnnouncementConfigCard({ config, flightDefinitionId, onDirtyChan
         </Text>
       ),
       labels: { confirm: 'Удалить', cancel: 'Отмена' },
-      confirmProps: { color: 'red' },
+      confirmProps: { color: 'danger' },
       onConfirm: () =>
         void runRowAction(
           () => deleteVariant.mutateAsync({ configId: config.id, variantId: variant.id }),
@@ -243,7 +244,7 @@ export function AnnouncementConfigCard({ config, flightDefinitionId, onDirtyChan
           </Group>
 
           {config.enabled && reasons.length > 0 ? (
-            <Alert color="yellow" title="Диспетчер пока не может запустить это объявление">
+            <Alert color="warning" title="Диспетчер пока не может запустить это объявление">
               {reasons.join('. ')}
             </Alert>
           ) : null}
@@ -280,44 +281,53 @@ export function AnnouncementConfigCard({ config, flightDefinitionId, onDirtyChan
           </Text>
         ) : null}
 
-        {variants.map((variant, index) =>
-          editing?.kind === 'existing' && editing.variantId === variant.id ? (
-            <VariantEditor
-              key={variant.id}
-              {...editorProps}
-              title={labelOf(variant.languageCode)}
-              initial={variantInputFrom(variant)}
-            />
-          ) : (
-            <VariantRow
-              key={variant.id}
-              variant={variant}
-              languageLabel={labelOf(variant.languageCode)}
-              audioAssets={audioAssets.data ?? []}
-              isFirst={index === 0}
-              isLast={index === variants.length - 1}
-              editLocked={editing !== null}
-              busy={rowBusy}
-              onEdit={() => setEditing({ kind: 'existing', variantId: variant.id })}
-              onToggle={(enabled) => toggleVariant(variant, enabled)}
-              onMove={(direction) => move(variant, direction)}
-              onDelete={() => confirmDelete(variant)}
-            />
-          ),
-        )}
+        {variants.length > 0 || editing?.kind === 'new' ? (
+          <Paper withBorder style={{ overflow: 'hidden' }}>
+            {variants.map((variant, index) => (
+              <Fragment key={variant.id}>
+                {index > 0 ? <Divider /> : null}
+                {editing?.kind === 'existing' && editing.variantId === variant.id ? (
+                  <VariantEditor
+                    {...editorProps}
+                    title={labelOf(variant.languageCode)}
+                    initial={variantInputFrom(variant)}
+                  />
+                ) : (
+                  <VariantRow
+                    variant={variant}
+                    languageLabel={labelOf(variant.languageCode)}
+                    audioAssets={audioAssets.data ?? []}
+                    isFirst={index === 0}
+                    isLast={index === variants.length - 1}
+                    editLocked={editing !== null}
+                    busy={rowBusy}
+                    onEdit={() => setEditing({ kind: 'existing', variantId: variant.id })}
+                    onToggle={(enabled) => toggleVariant(variant, enabled)}
+                    onMove={(direction) => move(variant, direction)}
+                    onDelete={() => confirmDelete(variant)}
+                  />
+                )}
+              </Fragment>
+            ))}
+            {editing?.kind === 'new' ? (
+              <>
+                {variants.length > 0 ? <Divider /> : null}
+                <VariantEditor
+                  {...editorProps}
+                  title="Новый язык"
+                  initial={{
+                    languageCode: nextLanguage,
+                    sortOrder: variants.length + 1,
+                    segments: [],
+                    enabled: true,
+                  }}
+                />
+              </>
+            ) : null}
+          </Paper>
+        ) : null}
 
-        {editing?.kind === 'new' ? (
-          <VariantEditor
-            {...editorProps}
-            title="Новый язык"
-            initial={{
-              languageCode: nextLanguage,
-              sortOrder: variants.length + 1,
-              segments: [],
-              enabled: true,
-            }}
-          />
-        ) : (
+        {editing?.kind !== 'new' ? (
           <Button
             w="fit-content"
             variant="light"
@@ -327,11 +337,11 @@ export function AnnouncementConfigCard({ config, flightDefinitionId, onDirtyChan
           >
             Добавить язык
           </Button>
-        )}
+        ) : null}
       </Stack>
 
       {error ? (
-        <Alert color="red" icon={<IconAlertCircle size={16} />}>
+        <Alert color="danger" icon={<IconAlertCircle size={16} />}>
           {error}
         </Alert>
       ) : null}

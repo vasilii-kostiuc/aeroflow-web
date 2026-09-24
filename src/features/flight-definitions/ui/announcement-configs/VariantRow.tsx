@@ -1,4 +1,4 @@
-import { ActionIcon, Button, Group, Paper, Switch, Text, Tooltip } from '@mantine/core'
+import { ActionIcon, Box, Button, Group, Switch, Text, Tooltip } from '@mantine/core'
 import { IconArrowDown, IconArrowUp, IconEdit, IconTrash } from '@tabler/icons-react'
 
 import { AudioPreviewButton } from '@/shared/ui/AudioPreviewButton'
@@ -47,7 +47,7 @@ export function VariantRow({
   const previewAssetId = singleAudioAssetId(segments)
 
   return (
-    <Paper withBorder p="xs" opacity={variant.enabled ? 1 : 0.6}>
+    <Box px="sm" py="xs" opacity={variant.enabled ? 1 : 0.6}>
       <Group justify="space-between" wrap="nowrap" gap="sm">
         <Group gap={2} wrap="nowrap">
           <Tooltip label="Выше">
@@ -101,7 +101,7 @@ export function VariantRow({
           <Tooltip label="Удалить">
             <ActionIcon
               variant="subtle"
-              color="red"
+              color="danger"
               aria-label={`Удалить язык ${variant.languageCode}`}
               disabled={busy}
               onClick={onDelete}
@@ -111,6 +111,6 @@ export function VariantRow({
           </Tooltip>
         </Group>
       </Group>
-    </Paper>
+    </Box>
   )
 }

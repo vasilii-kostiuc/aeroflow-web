@@ -18,7 +18,7 @@ export function StatusBadge({
 }: Props) {
   return (
     <Badge
-      color={active ? 'green' : 'gray'}
+      color={active ? 'success' : 'gray'}
       variant="light"
       style={{ flexShrink: 0, overflow: 'visible' }}
     >

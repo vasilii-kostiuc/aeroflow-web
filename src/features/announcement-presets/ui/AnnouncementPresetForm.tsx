@@ -177,7 +177,7 @@ export function AnnouncementPresetForm({
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
-          {error && <Alert color="red">{error}</Alert>}
+          {error && <Alert color="danger">{error}</Alert>}
 
           <TextInput
             label="Название"
@@ -218,7 +218,7 @@ export function AnnouncementPresetForm({
                       </div>
                       <ActionIcon
                         variant="subtle"
-                        color="red"
+                        color="danger"
                         mt={4}
                         aria-label={`Удалить вариант ${index + 1}`}
                         disabled={form.values.variants.length === 1}

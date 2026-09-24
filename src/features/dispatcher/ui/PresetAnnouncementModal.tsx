@@ -127,7 +127,7 @@ export function PresetAnnouncementModal({
     <Modal opened={opened} onClose={handleClose} title={title}>
       <Stack gap="md">
         {notice ? (
-          <Alert color="red" icon={<IconAlertCircle size={16} />}>
+          <Alert color="danger" icon={<IconAlertCircle size={16} />}>
             {notice}
           </Alert>
         ) : null}
@@ -167,7 +167,7 @@ export function PresetAnnouncementModal({
         )}
 
         {launch.isError && (
-          <Alert color="red" icon={<IconAlertCircle size={16} />} title={errorTitle}>
+          <Alert color="danger" icon={<IconAlertCircle size={16} />} title={errorTitle}>
             {errorMessage(launch.error)}
           </Alert>
         )}
