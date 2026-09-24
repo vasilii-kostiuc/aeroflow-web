@@ -3,7 +3,7 @@ import { Notifications } from '@mantine/notifications'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { FlightDefinitionDetailsPage } from './FlightDefinitionDetailsPage'
@@ -68,18 +68,18 @@ function renderPage(initialEntry = `/flight-definitions/${flight.id}`) {
     },
   })
 
+  // A data router, as in the app: the announcements tab guards unsaved edits
+  // with useBlocker, which only works inside one.
+  const router = createMemoryRouter(
+    [{ path: '/flight-definitions/:id', element: <FlightDefinitionDetailsPage /> }],
+    { initialEntries: [initialEntry] },
+  )
+
   return render(
     <MantineProvider env="test">
       <Notifications />
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={[initialEntry]}>
-          <Routes>
-            <Route
-              path="/flight-definitions/:id"
-              element={<FlightDefinitionDetailsPage />}
-            />
-          </Routes>
-        </MemoryRouter>
+        <RouterProvider router={router} />
       </QueryClientProvider>
     </MantineProvider>,
   )
