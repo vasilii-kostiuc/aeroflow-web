@@ -24,7 +24,7 @@ const languages = [
   {
     code: 'ro-MD',
     name: 'Romanian (Moldova)',
-    nativeName: 'Romana',
+    nativeName: 'Română',
     active: true,
     sortOrder: 1,
   },
@@ -214,7 +214,7 @@ describe('FlightAnnouncementConfigsPanel', () => {
 
     renderPanel()
 
-    expect(await screen.findByText('Romana · ro-MD')).toBeInTheDocument()
+    expect(await screen.findByText('Română · ro-MD')).toBeInTheDocument()
     expect(screen.getByText('English · en')).toBeInTheDocument()
     expect(screen.getByText('Text inițial')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Сохранить' })).not.toBeInTheDocument()

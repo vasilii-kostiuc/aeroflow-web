@@ -3,7 +3,6 @@ import { useState } from 'react'
 import {
   ActionIcon,
   Alert,
-  Badge,
   Button,
   Group,
   Loader,
@@ -21,6 +20,7 @@ import { IconDotsVertical, IconEdit, IconPlus } from '@tabler/icons-react'
 import { useAirports, useChangeAirportStatus } from '@/features/airports/hooks/useAirports'
 import type { Airport } from '@/features/airports/model/types'
 import { AirportForm } from '@/features/airports/ui/AirportForm'
+import { StatusBadge } from '@/shared/ui/StatusBadge'
 
 export function AirportsPage() {
   const [search, setSearch] = useState('')
@@ -67,7 +67,7 @@ export function AirportsPage() {
                       <Table.Td>{airport.cityName}</Table.Td>
                       <Table.Td>{airport.name}</Table.Td>
                       <Table.Td>{airport.countryCode}</Table.Td>
-                      <Table.Td><Badge color={airport.active ? 'green' : 'gray'}>{airport.active ? 'Активен' : 'Неактивен'}</Badge></Table.Td>
+                      <Table.Td><StatusBadge active={airport.active} activeLabel="Активен" inactiveLabel="Неактивен" /></Table.Td>
                       <Table.Td>
                         <Menu position="bottom-end">
                           <Menu.Target><ActionIcon variant="subtle" aria-label={`Действия для ${airport.code}`}><IconDotsVertical size={18} /></ActionIcon></Menu.Target>
