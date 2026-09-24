@@ -11,6 +11,7 @@ import { AirportsPage } from '@/pages/airports/AirportsPage'
 import { SupplementaryTemplatesPage } from '@/pages/supplementary-templates/SupplementaryTemplatesPage'
 import { EmergencyTemplatesPage } from '@/pages/emergency-templates/EmergencyTemplatesPage'
 import { DispatcherPage } from '@/pages/dispatcher/DispatcherPage'
+import { AudioAssetsPage } from '@/pages/audio-assets/AudioAssetsPage'
 import { LoginPage } from '@/pages/login/LoginPage'
 import { NotFoundPage } from '@/pages/not-found/NotFoundPage'
 
@@ -57,6 +58,10 @@ export const router = createBrowserRouter([
       {
         path: paths.emergencyTemplates,
         element: <EmergencyTemplatesPage />,
+      },
+      {
+        path: paths.audioAssets,
+        element: <AudioAssetsPage />,
       },
       {
         path: paths.dispatcher,

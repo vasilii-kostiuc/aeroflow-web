@@ -9,5 +9,6 @@ export const paths = {
   airports: '/airports',
   supplementaryTemplates: '/supplementary-announcements',
   emergencyTemplates: '/emergency-announcements',
+  audioAssets: '/audio-assets',
   dispatcher: '/dispatcher',
 } as const

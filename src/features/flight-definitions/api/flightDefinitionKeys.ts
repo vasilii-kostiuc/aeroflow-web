@@ -9,5 +9,4 @@ export const flightDefinitionKeys = {
   detail: (id: string) => [...flightDefinitionKeys.details(), id] as const,
   announcementConfigs: (id: string) =>
     [...flightDefinitionKeys.detail(id), 'announcement-configs'] as const,
-  audioAssets: ['audio-assets'] as const,
 }

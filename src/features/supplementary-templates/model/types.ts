@@ -14,5 +14,3 @@ export type SupplementaryTemplateVariant = AnnouncementPresetVariant
 export type SupplementaryTemplate = AnnouncementPreset
 
 export type SupplementaryTemplateInput = AnnouncementPresetInput
-
-export type { AudioAsset } from '@/features/announcement-presets/model/types'

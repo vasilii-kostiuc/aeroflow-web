@@ -47,4 +47,25 @@ describe('AudioPreviewButton', () => {
     expect(screen.getByRole('button', { name: 'Прослушать' })).toBeDisabled()
     expect(mocks.fetchAudioAssetObjectUrl).not.toHaveBeenCalled()
   })
+
+  it('stops the previous preview when another one starts', async () => {
+    const user = userEvent.setup()
+    mocks.fetchAudioAssetObjectUrl.mockResolvedValue('blob:mock-url')
+    render(
+      <MantineProvider env="test">
+        <AudioPreviewButton audioAssetId="asset-1" label="Прослушать первый" />
+        <AudioPreviewButton audioAssetId="asset-2" label="Прослушать второй" />
+      </MantineProvider>,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Прослушать первый' }))
+    expect(await screen.findByRole('button', { name: 'Остановить' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Прослушать второй' }))
+
+    // Still exactly one stop button: the first preview went back to «play».
+    expect(await screen.findAllByRole('button', { name: 'Остановить' })).toHaveLength(1)
+    expect(screen.getByRole('button', { name: 'Прослушать первый' })).toBeInTheDocument()
+    expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled()
+  })
 })

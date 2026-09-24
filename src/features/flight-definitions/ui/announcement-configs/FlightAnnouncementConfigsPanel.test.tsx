@@ -40,8 +40,11 @@ const languages = [
 const audioAssets = [
   {
     id: '01900000-0000-7000-8000-000000000004',
+    title: 'Открытие регистрации',
     name: 'opening-ro.wav',
     languageCode: 'ro-MD',
+    folderId: null,
+    source: 'uploaded',
     active: true,
     mimeType: 'audio/x-wav',
     sizeBytes: 44,
@@ -153,20 +156,29 @@ function twoLanguageConfig() {
 }
 
 function mockPanelApi(configs: unknown[]) {
+  let libraryAssets: unknown[] = [...audioAssets]
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input)
     if (url.includes('/languages')) return apiResponse(languages)
     if (url.includes('/audio-assets') && init?.method === 'POST') {
-      return apiResponse({
+      const uploaded = {
         id: '01900000-0000-7000-8000-000000000005',
+        title: 'replacement',
         name: 'replacement.wav',
         languageCode: 'ro-MD',
+        folderId: null,
+        source: 'uploaded',
         active: true,
         mimeType: 'audio/x-wav',
         sizeBytes: 44,
-      })
+      }
+      // Like the server, later list requests include the uploaded file.
+      libraryAssets = [...libraryAssets, uploaded]
+
+      return apiResponse(uploaded)
     }
-    if (url.includes('/audio-assets')) return apiResponse(audioAssets)
+    if (url.includes('/audio-assets')) return apiResponse(libraryAssets)
+    if (url.includes('/audio-folders')) return apiResponse([])
     if (init?.method === 'POST') return apiResponse(config())
     if (init?.method === 'PATCH') return apiResponse(config())
 
@@ -479,7 +491,7 @@ describe('FlightAnnouncementConfigsPanel', () => {
     })
   })
 
-  it('uploads an audio file from the segment modal with the variant language', async () => {
+  it('uploads an audio file from the library picker with the variant language', async () => {
     const fetchMock = mockPanelApi([
       config({
         variants: [
@@ -504,12 +516,13 @@ describe('FlightAnnouncementConfigsPanel', () => {
 
     const { container } = renderPanel()
 
-    expect(await screen.findByText('opening-ro.wav · ro-MD')).toBeInTheDocument()
+    expect(await screen.findByText('Открытие регистрации · ro-MD')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Изменить' }))
     await user.click(
       screen.getByRole('button', { name: 'Редактировать сегмент 1 (варианта ro-MD)' }),
     )
-    expect(await screen.findByText('Загрузить новый аудиофайл')).toBeInTheDocument()
+    await user.click(await screen.findByRole('button', { name: 'Выбрать: Аудиофайл' }))
+    await user.click(await screen.findByRole('button', { name: 'Загрузить файл' }))
     const input = container.ownerDocument.querySelector('input[type="file"]')
     expect(input).toBeInstanceOf(HTMLInputElement)
     await user.upload(
@@ -524,6 +537,9 @@ describe('FlightAnnouncementConfigsPanel', () => {
     const body = uploadCall?.[1]?.body
     expect(body).toBeInstanceOf(FormData)
     expect((body as FormData).get('languageCode')).toBe('ro-MD')
+    // The uploaded file is picked right away and shown by its title.
+    expect(await screen.findByText('replacement')).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Выбор аудиофайла' })).not.toBeInTheDocument()
   })
 })
 

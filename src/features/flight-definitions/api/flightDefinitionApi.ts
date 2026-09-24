@@ -3,7 +3,6 @@ import type { PaginatedResult } from '@/shared/api/types'
 
 import type {
   AnnouncementVariantInput,
-  AudioAsset,
   FlightDefinition,
   FlightAnnouncementConfig,
   FlightAnnouncementConfigInput,
@@ -145,22 +144,4 @@ export function deleteAnnouncementVariant(
       method: 'DELETE',
     },
   )
-}
-
-export function getAudioAssets(): Promise<AudioAsset[]> {
-  return apiRequest('/v1/admin/audio-assets')
-}
-
-export function uploadAudioAsset(
-  file: File,
-  languageCode: string,
-): Promise<AudioAsset> {
-  const body = new FormData()
-  body.set('file', file)
-  body.set('languageCode', languageCode)
-
-  return apiRequest('/v1/admin/audio-assets', {
-    method: 'POST',
-    body,
-  })
 }
