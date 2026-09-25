@@ -10,5 +10,6 @@ export const paths = {
   supplementaryTemplates: '/supplementary-announcements',
   emergencyTemplates: '/emergency-announcements',
   audioAssets: '/audio-assets',
+  users: '/users',
   dispatcher: '/dispatcher',
 } as const

@@ -9,10 +9,13 @@ import {
   IconMusic,
   IconPlaneDeparture,
   IconSpeakerphone,
+  IconUsers,
 } from '@tabler/icons-react'
 import { NavLink as RouterNavLink, Outlet } from 'react-router'
 
 import { paths } from '@/app/router/paths'
+import { useCurrentRole, useSyncCurrentUser } from '@/features/auth/hooks/useCurrentRole'
+import { hasRole } from '@/features/auth/model/roles'
 import { CurrentUserMenu } from '@/features/auth/ui/CurrentUserMenu'
 
 function NavSection({ label, children }: { label: string; children: ReactNode }) {
@@ -28,6 +31,8 @@ function NavSection({ label, children }: { label: string; children: ReactNode })
 
 export function AppLayout() {
   const [opened, { toggle, close }] = useDisclosure()
+  useSyncCurrentUser()
+  const role = useCurrentRole()
 
   const link = (to: string, label: string, icon: ReactNode) => (
     <NavLink component={RouterNavLink} to={to} label={label} leftSection={icon} onClick={close} />
@@ -66,24 +71,33 @@ export function AppLayout() {
 
       <AppShell.Navbar p="md">
         <Stack gap="lg">
-          <NavSection label="Работа">
-            {link(paths.dispatcher, 'Панель диспетчера', <IconBroadcast size={18} />)}
-          </NavSection>
-          <NavSection label="Справочники">
-            {link(paths.flightDefinitions, 'Карточки рейсов', <IconPlaneDeparture size={18} />)}
-            {link(paths.airports, 'Аэропорты', <IconBuildingAirport size={18} />)}
-            {link(
-              paths.supplementaryTemplates,
-              'Дополнительные объявления',
-              <IconSpeakerphone size={18} />,
-            )}
-            {link(
-              paths.emergencyTemplates,
-              'Экстренные объявления',
-              <IconAlertTriangle size={18} />,
-            )}
-            {link(paths.audioAssets, 'Аудиобиблиотека', <IconMusic size={18} />)}
-          </NavSection>
+          {hasRole(role, 'dispatcher') && (
+            <NavSection label="Работа">
+              {link(paths.dispatcher, 'Панель диспетчера', <IconBroadcast size={18} />)}
+            </NavSection>
+          )}
+          {hasRole(role, 'admin') && (
+            <NavSection label="Справочники">
+              {link(paths.flightDefinitions, 'Карточки рейсов', <IconPlaneDeparture size={18} />)}
+              {link(paths.airports, 'Аэропорты', <IconBuildingAirport size={18} />)}
+              {link(
+                paths.supplementaryTemplates,
+                'Дополнительные объявления',
+                <IconSpeakerphone size={18} />,
+              )}
+              {link(
+                paths.emergencyTemplates,
+                'Экстренные объявления',
+                <IconAlertTriangle size={18} />,
+              )}
+              {link(paths.audioAssets, 'Аудиобиблиотека', <IconMusic size={18} />)}
+            </NavSection>
+          )}
+          {hasRole(role, 'admin') && (
+            <NavSection label="Администрирование">
+              {link(paths.users, 'Пользователи', <IconUsers size={18} />)}
+            </NavSection>
+          )}
         </Stack>
       </AppShell.Navbar>
 
