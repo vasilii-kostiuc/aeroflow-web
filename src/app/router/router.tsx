@@ -1,9 +1,11 @@
-import { Navigate, createBrowserRouter } from 'react-router'
+import { createBrowserRouter } from 'react-router'
 
 import { paths } from '@/app/router/paths'
 import { AppLayout } from '@/app/router/ui/AppLayout'
+import { HomeRedirect } from '@/app/router/ui/HomeRedirect'
 import { ProtectedRoute } from '@/app/router/ui/ProtectedRoute'
 import { PublicOnlyRoute } from '@/app/router/ui/PublicOnlyRoute'
+import { RequireRole } from '@/app/router/ui/RequireRole'
 import { FlightDefinitionsPage } from '@/pages/flight-definitions/FlightDefinitionsPage'
 import { FlightDefinitionCreatePage } from '@/pages/flight-definitions/FlightDefinitionCreatePage'
 import { FlightDefinitionDetailsPage } from '@/pages/flight-definitions/FlightDefinitionDetailsPage'
@@ -12,6 +14,7 @@ import { SupplementaryTemplatesPage } from '@/pages/supplementary-templates/Supp
 import { EmergencyTemplatesPage } from '@/pages/emergency-templates/EmergencyTemplatesPage'
 import { DispatcherPage } from '@/pages/dispatcher/DispatcherPage'
 import { AudioAssetsPage } from '@/pages/audio-assets/AudioAssetsPage'
+import { UsersPage } from '@/pages/users/UsersPage'
 import { LoginPage } from '@/pages/login/LoginPage'
 import { NotFoundPage } from '@/pages/not-found/NotFoundPage'
 
@@ -33,39 +36,79 @@ export const router = createBrowserRouter([
     children: [
       {
         path: paths.home,
-        element: <Navigate to={paths.flightDefinitions} replace />,
+        element: <HomeRedirect />,
       },
       {
         path: paths.flightDefinitions,
-        element: <FlightDefinitionsPage />,
+        element: (
+          <RequireRole role="admin">
+            <FlightDefinitionsPage />
+          </RequireRole>
+        ),
       },
       {
         path: paths.flightDefinitionNew,
-        element: <FlightDefinitionCreatePage />,
+        element: (
+          <RequireRole role="admin">
+            <FlightDefinitionCreatePage />
+          </RequireRole>
+        ),
       },
       {
         path: paths.flightDefinitionDetails,
-        element: <FlightDefinitionDetailsPage />,
+        element: (
+          <RequireRole role="admin">
+            <FlightDefinitionDetailsPage />
+          </RequireRole>
+        ),
       },
       {
         path: paths.airports,
-        element: <AirportsPage />,
+        element: (
+          <RequireRole role="admin">
+            <AirportsPage />
+          </RequireRole>
+        ),
       },
       {
         path: paths.supplementaryTemplates,
-        element: <SupplementaryTemplatesPage />,
+        element: (
+          <RequireRole role="admin">
+            <SupplementaryTemplatesPage />
+          </RequireRole>
+        ),
       },
       {
         path: paths.emergencyTemplates,
-        element: <EmergencyTemplatesPage />,
+        element: (
+          <RequireRole role="admin">
+            <EmergencyTemplatesPage />
+          </RequireRole>
+        ),
       },
       {
         path: paths.audioAssets,
-        element: <AudioAssetsPage />,
+        element: (
+          <RequireRole role="admin">
+            <AudioAssetsPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: paths.users,
+        element: (
+          <RequireRole role="admin">
+            <UsersPage />
+          </RequireRole>
+        ),
       },
       {
         path: paths.dispatcher,
-        element: <DispatcherPage />,
+        element: (
+          <RequireRole role="dispatcher">
+            <DispatcherPage />
+          </RequireRole>
+        ),
       },
     ],
   },

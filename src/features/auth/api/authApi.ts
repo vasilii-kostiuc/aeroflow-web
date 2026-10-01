@@ -30,3 +30,14 @@ export function logout(refreshTokenValue: string): Promise<void> {
     retryAfterRefresh: false,
   })
 }
+
+/** The signed-in user with the current role (null = no access). */
+export type CurrentUser = {
+  id: string
+  email: string
+  role: 'admin' | 'dispatcher' | null
+}
+
+export function getCurrentUser(): Promise<CurrentUser> {
+  return apiRequest<CurrentUser>('/v1/me')
+}
