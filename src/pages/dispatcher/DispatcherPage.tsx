@@ -31,6 +31,7 @@ import { EmergencyAnnouncementModal } from '@/features/dispatcher/ui/EmergencyAn
 import { EmergencyModeBanner } from '@/features/dispatcher/ui/EmergencyModeBanner'
 import { PlaybackQueueDrawer } from '@/features/dispatcher/ui/PlaybackQueueDrawer'
 import { SupplementaryAnnouncementModal } from '@/features/dispatcher/ui/SupplementaryAnnouncementModal'
+import { SystemAlertsBanner } from '@/features/system-status/ui/SystemAlertsBanner'
 import { PageHeader } from '@/shared/ui/PageHeader'
 
 export function DispatcherPage() {
@@ -100,6 +101,7 @@ export function DispatcherPage() {
         }
       />
 
+      <SystemAlertsBanner />
       <EmergencyModeBanner />
 
       <DispatcherActionFilter value={action} onChange={setAction} />

@@ -6,6 +6,7 @@ import {
   IconAlertTriangle,
   IconBroadcast,
   IconBuildingAirport,
+  IconHeartbeat,
   IconMusic,
   IconPlaneDeparture,
   IconSpeakerphone,
@@ -96,6 +97,7 @@ export function AppLayout() {
           {hasRole(role, 'admin') && (
             <NavSection label="Администрирование">
               {link(paths.users, 'Пользователи', <IconUsers size={18} />)}
+              {link(paths.systemStatus, 'Состояние системы', <IconHeartbeat size={18} />)}
             </NavSection>
           )}
         </Stack>
