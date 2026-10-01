@@ -14,6 +14,7 @@ import { SupplementaryTemplatesPage } from '@/pages/supplementary-templates/Supp
 import { EmergencyTemplatesPage } from '@/pages/emergency-templates/EmergencyTemplatesPage'
 import { DispatcherPage } from '@/pages/dispatcher/DispatcherPage'
 import { AudioAssetsPage } from '@/pages/audio-assets/AudioAssetsPage'
+import { SystemStatusPage } from '@/pages/system-status/SystemStatusPage'
 import { UsersPage } from '@/pages/users/UsersPage'
 import { LoginPage } from '@/pages/login/LoginPage'
 import { NotFoundPage } from '@/pages/not-found/NotFoundPage'
@@ -99,6 +100,14 @@ export const router = createBrowserRouter([
         element: (
           <RequireRole role="admin">
             <UsersPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: paths.systemStatus,
+        element: (
+          <RequireRole role="admin">
+            <SystemStatusPage />
           </RequireRole>
         ),
       },

@@ -11,5 +11,6 @@ export const paths = {
   emergencyTemplates: '/emergency-announcements',
   audioAssets: '/audio-assets',
   users: '/users',
+  systemStatus: '/system-status',
   dispatcher: '/dispatcher',
 } as const
